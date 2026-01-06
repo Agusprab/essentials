@@ -7,7 +7,7 @@
 
 ## 🌐 Demo Deploy
 
-
+[https://essentials-tau.vercel.app/] (https://essentials-tau.vercel.app/)
 ---
 
 ## 📅 Progress Harian
