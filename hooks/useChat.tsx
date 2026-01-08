@@ -49,10 +49,27 @@ export const useChat = () => {
     init();
   }, []);
 
-  const handleSendUrl = (url: string) => {
+  const handleSendUrl = async (url: string) => {
     if (!url.trim()) return;
 
     const validatedUrl = url.startsWith('http') ? url : `https://${url}`;
+
+    // Validate URL by attempting to fetch it
+    try {
+      await fetch(validatedUrl, { method: 'HEAD', mode: 'no-cors' });
+    } catch (error) {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: getUniqueId(),
+          role: 'assistant',
+          content: 'URL tidak valid atau domain tidak dapat diakses. Silakan masukkan ulang URL atau domain yang valid.',
+          type: 'input'
+        }
+      ]);
+      return;
+    }
+
     setCurrentUrl(validatedUrl);
 
     setMessages(prev => [
@@ -272,15 +289,17 @@ export const useChat = () => {
                   Hubungi Kami via WhatsApp
                 </a>
               ),
+
               type: 'text'
-            }
+            },
+            
           ]);
         }, 2000); // Delay after result
       }
     }, 1500);
   };
 
-  const handleSendInput = (val: string) => {
+  const handleSendInput = async (val: string) => {
     if (!val.trim()) return;
 
     // Check if we are waiting for URL or for extra info
@@ -297,11 +316,92 @@ export const useChat = () => {
           { id: getUniqueId(), role: 'user', content: val, type: 'text' }
         ]);
 
-        let option = '';
-        if (context.includes('SEO')) option = 'Performance SEO Web Saya';
-        else if (context.includes('brand')) option = 'Performance Brand di AI Search';
-
-        showResult(option, val);
+        if (context.includes('SEO')) {
+          const option = 'Performance SEO Web Saya';
+          showResult(option, val);
+        } else if (context.includes('brand')) {
+          setIsTyping(true);
+          try {
+            const response = await fetch('/api/chat', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                messages: [
+                  { role: 'system', content: 'Anda adalah asisten AI yang membantu menganalisis performa brand di AI Search.' },
+                  { role: 'user', content: `jadi disini saya ingin membuat mesin pengecekan performance website di ai search, link websitenya adalah "${currentUrl}" lalu disini coba lakukan pencarian, "${val}" saya ingin anda jangan terpaku dengan link yang saya masukan saya ingin anda benar-benar melakukan pencarian "${val}". lalu saya ingin anda menampilkan list-list "${val}" saja berupa nama dan link website untuk "${val}" batasi 10 saja jika memang ada link tersebut di list biarkan, tapi jika tidak ada pada list juga tidak apa-apa saya ingin fokus ke pencarianya saja jangan mengada-ada seolah link yang saya sampaikan ada di list katakan dengan jujur, JAWAB HANYA LIST SAJA` }
+                ]
+              })
+            });
+            const data = await response.json();
+            if (response.ok) {
+              const rawResponse = data.response;
+              // Parse the list
+              const lines = rawResponse.split('\n').filter(line => line.trim());
+              const items = lines.map(line => {
+                const match = line.match(/^\d+\.\s*(.+?)\s*-\s*(https?:\/\/[^\s]+)/);
+                if (match) {
+                  return { name: match[1].trim(), url: match[2].trim() };
+                }
+                return null;
+              }).filter(Boolean);
+              
+              let position = -1;
+              items.forEach((item, index) => {
+                if (item.url.includes(currentUrl) || currentUrl.includes(item.url)) {
+                  position = index + 1;
+                }
+              });
+              
+              const content = (
+                <div>
+                  <p>Hasil pencarian untuk "{val}":</p>
+                  <ul className="list-decimal list-inside space-y-1">
+                    {items.map((item, index) => (
+                      <li key={index}>
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          {item.name}
+                        </a> - {item.url}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+              
+              setMessages(prev => [...prev, {
+                id: getUniqueId(),
+                role: 'assistant',
+                content: content,
+                type: 'text'
+              }]);
+              
+              if (position !== -1) {
+                setMessages(prev => [...prev, {
+                  id: getUniqueId(),
+                  role: 'assistant',
+                  content: `Anda berada di urutan ke-${position}.`,
+                  type: 'text'
+                }]);
+              }
+            } else {
+              setMessages(prev => [...prev, {
+                id: getUniqueId(),
+                role: 'assistant',
+                content: 'Maaf, terjadi kesalahan saat menganalisis. Silakan coba lagi.',
+                type: 'text'
+              }]);
+            }
+          } catch (error) {
+            setMessages(prev => [...prev, {
+              id: getUniqueId(),
+              role: 'assistant',
+              content: 'Maaf, terjadi kesalahan jaringan. Silakan coba lagi.',
+              type: 'text'
+            }]);
+          }
+          setIsTyping(false);
+        }
       } else {
         // If not waiting for extra info, show apology and options
         setMessages(prev => [
