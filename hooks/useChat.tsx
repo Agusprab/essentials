@@ -338,8 +338,8 @@ export const useChat = () => {
             if (response.ok) {
               const rawResponse = data.response;
               // Parse the list
-              const lines = rawResponse.split('\n').filter(line => line.trim());
-              const items = lines.map(line => {
+              const lines = rawResponse.split('\n').filter((line: any) => line.trim());
+              const items = lines.map((line: any) => {
                 const match = line.match(/^\d+\.\s*(.+?)\s*-\s*(https?:\/\/[^\s]+)/);
                 if (match) {
                   return { name: match[1].trim(), url: match[2].trim() };
@@ -348,7 +348,7 @@ export const useChat = () => {
               }).filter(Boolean);
               
               let position = -1;
-              items.forEach((item, index) => {
+              items.forEach((item: any, index: number) => {
                 if (item.url.includes(currentUrl) || currentUrl.includes(item.url)) {
                   position = index + 1;
                 }
@@ -358,7 +358,7 @@ export const useChat = () => {
                 <div>
                   <p>Hasil pencarian untuk "{val}":</p>
                   <ul className="list-decimal list-inside space-y-1">
-                    {items.map((item, index) => (
+                    {items.map((item: any, index: number) => (
                       <li key={index}>
                         <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                           {item.name}
