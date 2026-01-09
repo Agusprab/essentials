@@ -89,7 +89,8 @@ export const useChat = () => {
           id: getUniqueId(),
           role: 'assistant',
           content: 'Bagus! Data apa yang ingin Anda lihat untuk website ini?',
-          type: 'options'
+          type: 'options',
+          options: ['Audit Kualitas Website', 'Performance SEO Web Saya', 'Performance Brand di AI Search']
         }
       ]);
       setIsTyping(false);
@@ -97,11 +98,6 @@ export const useChat = () => {
   };
 
   const handleOptionSelect = async (option: string) => {
-    setMessages(prev => [
-      ...prev,
-      { id: getUniqueId(), role: 'user', content: option, type: 'text' }
-    ]);
-
     setIsTyping(true);
 
     if (option === 'Audit Kualitas Website') {
@@ -165,7 +161,7 @@ export const useChat = () => {
             return resultDomain === currentDomain;
           });
 
-          const content = `Berikut hasil pencarian untuk **"${searchQuery}"** (Halaman ${searchPage}):\n\n${formattedResults}`;
+          const content = `Berikut hasil pencarian untuk **"${searchQuery}"** (Google page Ke-${searchPage}):\n\n${formattedResults}`;
 
           setMessages(prev => [...prev, {
             id: getUniqueId(),
@@ -410,6 +406,34 @@ export const useChat = () => {
 
   const handleSendInput = async (val: string) => {
     if (!val.trim()) return;
+
+    // Check if input matches any available options (always available if URL is set and not waiting)
+    if (currentUrl && !waitingFor) {
+      const optionKeywords: Record<string, string[]> = {
+        'Audit Kualitas Website': ['audit', 'kualitas', 'analisis', 'quality', 'analisa', 'review', 'evaluasi', 'inspection', 'assessment', 'diagnosis', 'scan', 'examine', 'verify', 'validate', 'inspeksi', 'penilaian', 'diagnosis', 'pemeriksaan', 'validasi'],
+        'Performance SEO Web Saya': ['seo', 'performance', 'search', 'engine', 'optimization', 'web', 'ranking', 'peringkat', 'posisi', 'mesin', 'optimasi', 'google', 'serp', 'keyword', 'onpage', 'offpage', 'backlink', 'meta', 'title', 'description', 'mesin pencari', 'optimasi mesin pencari', 'peringkat google', 'seonya'],
+        'Performance Brand di AI Search': ['brand', 'ai', 'search', 'intelligence', 'merek', 'produk', 'kecerdasan', 'buatan', 'artificial', 'machine', 'learning', 'visibility', 'analytics', 'powered', 'kecerdasan buatan', 'performa merek', 'pencarian ai']
+      };
+
+      let matchedOption: string | undefined;
+      const inputWords = val.toLowerCase().trim().split(/\s+/);
+      for (const [option, keywords] of Object.entries(optionKeywords)) {
+        if (inputWords.some(word => keywords.includes(word))) {
+          matchedOption = option;
+          break;
+        }
+      }
+
+      if (matchedOption) {
+        // Add user message with original input
+        setMessages(prev => [
+          ...prev,
+          { id: getUniqueId(), role: 'user', content: val, type: 'text' }
+        ]);
+        handleOptionSelect(matchedOption);
+        return;
+      }
+    }
 
     // Check if we are waiting for URL or for extra info
     if (!currentUrl) {
