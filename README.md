@@ -17,14 +17,16 @@
 | Hari | Catatan |
 |------|---------|
 | Day-1 | Setup and configuration project, connect to google speed insight, filtering data to ui |
+| Day-2 | integration openapi |
+| Day-3 | Integration serpa for search engine google|
 
 ---
 
 ## 📋 List Work
 
 - ~~tambahkan fungsi audit~~
-- performance seo
-- performance search ai
+- ~~peformance seo search~~
+-  ~~peformance AI search~~
 
 ---
 

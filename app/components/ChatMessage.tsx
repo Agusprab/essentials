@@ -1,13 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
-
-type Message = {
-  id: string;
-  role: 'assistant' | 'user';
-  content: string | React.ReactNode;
-  type?: 'text' | 'options' | 'input' | 'result';
-};
+import { Message } from '../../types/chat';
 
 interface ChatMessageProps {
   message: Message;
@@ -15,9 +9,19 @@ interface ChatMessageProps {
 }
 
 export default function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Delay sedikit untuk efek animasi muncul
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div
-      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} transition-all duration-500 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
     >
       <div
         className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
@@ -37,7 +41,7 @@ export default function ChatMessage({ message, onOptionSelect }: ChatMessageProp
                 a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{children}</a>,
               }}
             >
-              {message.content.replace(/<br>/g, '\n').replace(/<b>/g, '**').replace(/<\/b>/g, '**').replace(/<i>/g, '*').replace(/<\/i>/g, '*')}
+              {message.content.replace(/<br>/g, '\n').replace(/<b>/g, '**').replace(/<\/b>/g, '**').replace(/<i>/g, '*').replace(/<\/i>/g, '*').replace(/<a href="([^"]+)">([^<]+)<\/a>/g, '[$2]($1)')}
             </ReactMarkdown>
           ) : (
             message.content
@@ -46,11 +50,11 @@ export default function ChatMessage({ message, onOptionSelect }: ChatMessageProp
 
         {message.type === 'options' && (
           <div className="mt-4 grid grid-cols-1 gap-2">
-            {[
+            {(message.options || [
               'Audit Kualitas Website',
               'Performance SEO Web Saya',
               'Performance Brand di AI Search'
-            ].map((opt) => (
+            ]).map((opt) => (
               <button
                 key={opt}
                 onClick={() => onOptionSelect(opt)}

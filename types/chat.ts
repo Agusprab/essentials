@@ -3,4 +3,5 @@ export type Message = {
   role: 'assistant' | 'user';
   content: string | React.ReactNode;
   type?: 'text' | 'options' | 'input' | 'result';
+  options?: string[];
 };

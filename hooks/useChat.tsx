@@ -8,6 +8,8 @@ export const useChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
   const [waitingFor, setWaitingFor] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchPage, setSearchPage] = useState(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdCounter = useRef(0);
 
@@ -134,6 +136,104 @@ export const useChat = () => {
             type: 'text'
           }
         ]);
+      }
+      setIsTyping(false);
+    } else if (option === 'Lihat page berikutnya') {
+      // Fetch next page
+      setIsTyping(true);
+      try {
+        const response = await fetch('/api/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: searchQuery,
+            page: searchPage
+          })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          const results = data.results.organic || [];
+          const formattedResults = results.slice(0, 10).map((result: any, index: number) => 
+            `${index + 1 + (searchPage - 1) * 10}. **[${result.title}](${result.link})**\n${result.snippet}`
+          ).join('\n\n');
+
+          const isPresent = results.some((result: any) => {
+            const resultDomain = new URL(result.link).hostname.replace('www.', '');
+            const currentDomain = new URL(currentUrl).hostname.replace('www.', '');
+            return resultDomain === currentDomain;
+          });
+
+          const content = `Berikut hasil pencarian untuk **"${searchQuery}"** (Halaman ${searchPage}):\n\n${formattedResults}`;
+
+          setMessages(prev => [...prev, {
+            id: getUniqueId(),
+            role: 'assistant',
+            content: content,
+            type: 'text'
+          }]);
+
+          if (isPresent) {
+            const position = results.findIndex((result: any) => {
+              const resultDomain = new URL(result.link).hostname.replace('www.', '');
+              const currentDomain = new URL(currentUrl).hostname.replace('www.', '');
+              return resultDomain === currentDomain;
+            }) + 1 + (searchPage - 1) * 10;
+            setMessages(prev => [...prev, {
+              id: getUniqueId(),
+              role: 'assistant',
+              content: `Posisi Anda di-${position}`,
+              type: 'text'
+            }]);
+          } else {
+            setMessages(prev => [...prev, {
+              id: getUniqueId(),
+              role: 'assistant',
+              content: 'Website tidak ditemukan di halaman ini.',
+              type: 'text'
+            },
+              {
+              id: getUniqueId(),
+              role: 'assistant',
+              content: 'Konsultasikan lebih lanjut dengan kami jika Anda memerlukan bantuan untuk meningkatkan peringkat website Anda.',
+              type: 'text'
+            },
+            {
+              id: getUniqueId(),
+              role: 'assistant',
+              content: (
+                <a
+                  href="https://wa.me/628551162506?text=Halo,%20saya%20perlu%20bantuan%20untuk%20memperbaiki%20website%20saya"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                  </svg>
+                  Hubungi Kami via WhatsApp
+                </a>
+              ),
+
+              type: 'text'
+            },]);
+          }
+        } else {
+          setMessages(prev => [...prev, {
+            id: getUniqueId(),
+            role: 'assistant',
+            content: 'Maaf, terjadi kesalahan saat mengambil data pencarian.',
+            type: 'text'
+          }]);
+        }
+      } catch (error) {
+        setMessages(prev => [...prev, {
+          id: getUniqueId(),
+          role: 'assistant',
+          content: 'Maaf, terjadi kesalahan jaringan.',
+          type: 'text'
+        }]);
       }
       setIsTyping(false);
     } else {
@@ -323,8 +423,83 @@ export const useChat = () => {
         ]);
 
         if (waitingFor === 'seo') {
-          const option = 'Performance SEO Web Saya';
-          showResult(option, val);
+          setSearchQuery(val);
+          setSearchPage(1);
+          setIsTyping(true);
+          try {
+            const response = await fetch('/api/search', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                query: val
+              })
+            });
+            const data = await response.json();
+       
+            if (response.ok) {
+              // Format the results
+              const results = data.results.organic || [];
+              const formattedResults = results.slice(0, 10).map((result: any, index: number) => 
+                `${index + 1}. **[${result.title}](${result.link})**\n${result.snippet}`
+              ).join('\n\n');
+
+              const isPresent = results.some((result: any) => {
+                const resultDomain = new URL(result.link).hostname.replace('www.', '');
+                const currentDomain = new URL(currentUrl).hostname.replace('www.', '');
+                return resultDomain === currentDomain;
+              });
+
+              const content = `Berikut hasil pencarian untuk **"${val}"**:\n\n${formattedResults}`;
+
+              setMessages(prev => [...prev, {
+                id: getUniqueId(),
+                role: 'assistant',
+                content: content,
+                type: 'text'
+              }]);
+
+              // Check if current URL is present
+              if (isPresent) {
+                const position = results.findIndex((result: any) => {
+                  const resultDomain = new URL(result.link).hostname.replace('www.', '');
+                  const currentDomain = new URL(currentUrl).hostname.replace('www.', '');
+                  return resultDomain === currentDomain;
+                }) + 1;
+                setMessages(prev => [...prev, {
+                  id: getUniqueId(),
+                  role: 'assistant',
+                  content: `Posisi Anda di-${position}`,
+                  type: 'text'
+                }]);
+              } else {
+                setMessages(prev => [...prev, {
+                  id: getUniqueId(),
+                  role: 'assistant',
+                  content: 'Website tidak ditemukan di halaman 1. Lihat halaman berikutnya?',
+                  type: 'options',
+                  options: ['Lihat page berikutnya']
+                }]);
+                setSearchPage(2);
+              }
+            } else {
+              setMessages(prev => [...prev, {
+                id: getUniqueId(),
+                role: 'assistant',
+                content: 'Maaf, terjadi kesalahan saat mengambil data pencarian. Silakan coba lagi.',
+                type: 'text'
+              }]);
+            }
+          } catch (error) {
+            setMessages(prev => [...prev, {
+              id: getUniqueId(),
+              role: 'assistant',
+              content: 'Maaf, terjadi kesalahan jaringan. Silakan coba lagi.',
+              type: 'text'
+            }]);
+          }
+          setIsTyping(false);
           setWaitingFor('');
         } else if (waitingFor === 'brand') {
           setIsTyping(true);
