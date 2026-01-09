@@ -7,6 +7,7 @@ export const useChat = () => {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
+  const [waitingFor, setWaitingFor] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdCounter = useRef(0);
 
@@ -139,6 +140,7 @@ export const useChat = () => {
       // For other options, keep the existing logic
       setTimeout(() => {
         if (option === 'Performance SEO Web Saya') {
+          setWaitingFor('seo');
           setMessages(prev => [
             ...prev,
             {
@@ -149,14 +151,21 @@ export const useChat = () => {
             }
           ]);
         } else if (option === 'Performance Brand di AI Search') {
+          setWaitingFor('brand');
           setMessages(prev => [
             ...prev,
             {
               id: getUniqueId(),
               role: 'assistant',
-              content: 'Siapa nama brand atau produk yang ingin kami analisis di AI Search?',
+              content: 'Apa yang biasanya dicari konsumen tentang kategori brand Anda?',
               type: 'input'
             }
+            ,{
+            id: getUniqueId(),
+            role: 'assistant',
+            content: 'Contoh seperti "sepatu lari", "smartphone terbaru", atau "makanan sehat".',
+            type: 'text'
+          }
           ]);
         }
         setIsTyping(false);
@@ -307,19 +316,17 @@ export const useChat = () => {
       handleSendUrl(val);
     } else {
       // We already have a URL, so this must be extra info (keyword or brand)
-      const lastBotMsg = [...messages].reverse().find(m => m.role === 'assistant');
-      const context = lastBotMsg?.content?.toString() || '';
-
-      if (context.includes('SEO') || context.includes('brand')) {
+      if (waitingFor === 'seo' || waitingFor === 'brand') {
         setMessages(prev => [
           ...prev,
           { id: getUniqueId(), role: 'user', content: val, type: 'text' }
         ]);
 
-        if (context.includes('SEO')) {
+        if (waitingFor === 'seo') {
           const option = 'Performance SEO Web Saya';
           showResult(option, val);
-        } else if (context.includes('brand')) {
+          setWaitingFor('');
+        } else if (waitingFor === 'brand') {
           setIsTyping(true);
           try {
             const response = await fetch('/api/chat', {
@@ -330,60 +337,40 @@ export const useChat = () => {
               body: JSON.stringify({
                 messages: [
                   { role: 'system', content: 'Anda adalah asisten AI yang membantu menganalisis performa brand di AI Search.' },
-                  { role: 'user', content: `jadi disini saya ingin membuat mesin pengecekan performance website di ai search, link websitenya adalah "${currentUrl}" lalu disini coba lakukan pencarian, "${val}" saya ingin anda jangan terpaku dengan link yang saya masukan saya ingin anda benar-benar melakukan pencarian "${val}". lalu saya ingin anda menampilkan list-list "${val}" saja berupa nama dan link website untuk "${val}" batasi 10 saja jika memang ada link tersebut di list biarkan, tapi jika tidak ada pada list juga tidak apa-apa saya ingin fokus ke pencarianya saja jangan mengada-ada seolah link yang saya sampaikan ada di list katakan dengan jujur, JAWAB HANYA LIST SAJA` }
+                  { role: 'user', content: `Buat respons terstruktur untuk pencarian frase "${val}" dengan format seperti contoh berikut, tapi isi dengan data nyata berdasarkan pencarian Anda:
+
+Berikut hasil pencarian dengan kata kunci <b>"${val}"</b> berdasarkan evaluasi dari berbagai sumber dan review pengguna di internet. Saya melakukan pencarian tanpa terpaku pada link yang Anda berikan, sehingga fokus utama adalah mencari [jenis pencarian] yang memang populer dan banyak direkomendasikan. Berikut informasi dan daftar 5 [jenis item] terbaik:
+
+<b>[Nama Item 1]</b>
+[Deskripsi panjang tentang item 1].
+
+<b>[Nama Item 2]</b>
+[Deskripsi panjang].
+
+[Lanjutkan untuk 5 item]
+
+<b>Catatan penting:</b>
+
+[Catatan tentang website ${currentUrl} jika relevan].
+
+Daftar di atas berdasarkan [sumber].
+
+Jika fokus Anda adalah melakukan pengecekan performa website ${currentUrl} dalam konteks pencarian tersebut, maka [analisis posisi].
+
+Semoga informasi ini membantu Anda dalam mengembangkan mesin pengecekan performa website di AI Search. Jika membutuhkan hasil analisis lebih mendalam.
+
+Gunakan tag HTML sederhana seperti <b>, <i>, <a> untuk formatting, tapi jangan tampilkan tag di output - output harus sudah dirender.` }
                 ]
               })
             });
             const data = await response.json();
             if (response.ok) {
-              const rawResponse = data.response;
-              // Parse the list
-              const lines = rawResponse.split('\n').filter((line: any) => line.trim());
-              const items = lines.map((line: any) => {
-                const match = line.match(/^\d+\.\s*(.+?)\s*-\s*(https?:\/\/[^\s]+)/);
-                if (match) {
-                  return { name: match[1].trim(), url: match[2].trim() };
-                }
-                return null;
-              }).filter(Boolean);
-              
-              let position = -1;
-              items.forEach((item: any, index: number) => {
-                if (item.url.includes(currentUrl) || currentUrl.includes(item.url)) {
-                  position = index + 1;
-                }
-              });
-              
-              const content = (
-                <div>
-                  <p>Hasil pencarian untuk "{val}":</p>
-                  <ul className="list-decimal list-inside space-y-1">
-                    {items.map((item: any, index: number) => (
-                      <li key={index}>
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                          {item.name}
-                        </a> - {item.url}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-              
               setMessages(prev => [...prev, {
                 id: getUniqueId(),
                 role: 'assistant',
-                content: content,
+                content: data.response,
                 type: 'text'
               }]);
-              
-              if (position !== -1) {
-                setMessages(prev => [...prev, {
-                  id: getUniqueId(),
-                  role: 'assistant',
-                  content: `Anda berada di urutan ke-${position}.`,
-                  type: 'text'
-                }]);
-              }
             } else {
               setMessages(prev => [...prev, {
                 id: getUniqueId(),
@@ -401,6 +388,7 @@ export const useChat = () => {
             }]);
           }
           setIsTyping(false);
+          setWaitingFor('');
         }
       } else {
         // If not waiting for extra info, show apology and options

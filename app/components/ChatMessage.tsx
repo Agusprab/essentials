@@ -1,4 +1,6 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 
 type Message = {
   id: string;
@@ -25,7 +27,21 @@ export default function ChatMessage({ message, onOptionSelect }: ChatMessageProp
         }`}
       >
         <div className="text-sm md:text-base leading-relaxed">
-          {message.content}
+          {typeof message.content === 'string' ? (
+            <ReactMarkdown
+              remarkPlugins={[remarkBreaks]}
+              components={{
+                p: ({ children }) => <p className="mb-2">{children}</p>,
+                strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                em: ({ children }) => <em className="italic">{children}</em>,
+                a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{children}</a>,
+              }}
+            >
+              {message.content.replace(/<br>/g, '\n').replace(/<b>/g, '**').replace(/<\/b>/g, '**').replace(/<i>/g, '*').replace(/<\/i>/g, '*')}
+            </ReactMarkdown>
+          ) : (
+            message.content
+          )}
         </div>
 
         {message.type === 'options' && (
