@@ -10,6 +10,7 @@ export const useChat = () => {
   const [waitingFor, setWaitingFor] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchPage, setSearchPage] = useState(1);
+  const [errorCount, setErrorCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdCounter = useRef(0);
 
@@ -151,8 +152,8 @@ export const useChat = () => {
         const data = await response.json();
         if (response.ok) {
           const results = data.results.organic || [];
-          const formattedResults = results.slice(0, 10).map((result: any, index: number) => 
-            `${index + 1 + (searchPage - 1) * 10}. **[${result.title}](${result.link})**\n${result.snippet}`
+          const formattedResults = results.slice(0, 10).map((result: any) => 
+            `${result.position}. **[${result.title}](${result.link})**\n${result.snippet}`
           ).join('\n\n');
 
           const isPresent = results.some((result: any) => {
@@ -171,11 +172,12 @@ export const useChat = () => {
           }]);
 
           if (isPresent) {
-            const position = results.findIndex((result: any) => {
+            const foundResult = results.find((result: any) => {
               const resultDomain = new URL(result.link).hostname.replace('www.', '');
               const currentDomain = new URL(currentUrl).hostname.replace('www.', '');
               return resultDomain === currentDomain;
-            }) + 1 + (searchPage - 1) * 10;
+            });
+            const position = foundResult.position;
             setMessages(prev => [...prev, {
               id: getUniqueId(),
               role: 'assistant',
@@ -407,11 +409,35 @@ export const useChat = () => {
   const handleSendInput = async (val: string) => {
     if (!val.trim()) return;
 
+    // Check for greeting keywords
+    const greetingKeywords = ['halo', 'hai', 'hi', 'hello', 'selamat pagi', 'selamat siang', 'selamat malam', 'hey', 'apa kabar', 'bagaimana kabar','bantu'];
+    if (greetingKeywords.some(keyword => val.toLowerCase().includes(keyword))) {
+      setMessages(prev => [
+        ...prev,
+        { id: getUniqueId(), role: 'user', content: val, type: 'text' }
+      ]);
+
+      setIsTyping(true);
+      setTimeout(() => {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: getUniqueId(),
+            role: 'assistant',
+            content: 'Halo! Bagaimana saya bisa membantu Anda hari ini?',
+            type: 'options'
+          }
+        ]);
+        setIsTyping(false);
+      }, 1000);
+      return;
+    }
+
     // Check if input matches any available options (always available if URL is set and not waiting)
     if (currentUrl && !waitingFor) {
       const optionKeywords: Record<string, string[]> = {
         'Audit Kualitas Website': ['audit', 'kualitas', 'analisis', 'quality', 'analisa', 'review', 'evaluasi', 'inspection', 'assessment', 'diagnosis', 'scan', 'examine', 'verify', 'validate', 'inspeksi', 'penilaian', 'diagnosis', 'pemeriksaan', 'validasi'],
-        'Performance SEO Web Saya': ['seo', 'performance', 'search', 'engine', 'optimization', 'web', 'ranking', 'peringkat', 'posisi', 'mesin', 'optimasi', 'google', 'serp', 'keyword', 'onpage', 'offpage', 'backlink', 'meta', 'title', 'description', 'mesin pencari', 'optimasi mesin pencari', 'peringkat google', 'seonya'],
+        'Performance SEO Web Saya': ['seo','search', 'engine', 'optimization', 'web', 'ranking', 'peringkat', 'posisi', 'mesin', 'optimasi', 'google', 'serp', 'keyword', 'onpage', 'offpage', 'backlink', 'meta', 'title', 'description', 'mesin pencari', 'optimasi mesin pencari', 'peringkat google', 'seonya'],
         'Performance Brand di AI Search': ['brand', 'ai', 'search', 'intelligence', 'merek', 'produk', 'kecerdasan', 'buatan', 'artificial', 'machine', 'learning', 'visibility', 'analytics', 'powered', 'kecerdasan buatan', 'performa merek', 'pencarian ai']
       };
 
@@ -457,7 +483,8 @@ export const useChat = () => {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                query: val
+                query: val,
+                page: 1
               })
             });
             const data = await response.json();
@@ -465,8 +492,8 @@ export const useChat = () => {
             if (response.ok) {
               // Format the results
               const results = data.results.organic || [];
-              const formattedResults = results.slice(0, 10).map((result: any, index: number) => 
-                `${index + 1}. **[${result.title}](${result.link})**\n${result.snippet}`
+              const formattedResults = results.slice(0, 10).map((result: any) => 
+                `${result.position}. **[${result.title}](${result.link})**\n${result.snippet}`
               ).join('\n\n');
 
               const isPresent = results.some((result: any) => {
@@ -475,8 +502,7 @@ export const useChat = () => {
                 return resultDomain === currentDomain;
               });
 
-              const content = `Berikut hasil pencarian untuk **"${val}"**:\n\n${formattedResults}`;
-
+              const content = `Berikut hasil pencarian untuk **"${val}"** (Google page Ke-${searchPage}):\n\n${formattedResults}`;
               setMessages(prev => [...prev, {
                 id: getUniqueId(),
                 role: 'assistant',
@@ -486,11 +512,12 @@ export const useChat = () => {
 
               // Check if current URL is present
               if (isPresent) {
-                const position = results.findIndex((result: any) => {
+                const foundResult = results.find((result: any) => {
                   const resultDomain = new URL(result.link).hostname.replace('www.', '');
                   const currentDomain = new URL(currentUrl).hostname.replace('www.', '');
                   return resultDomain === currentDomain;
-                }) + 1;
+                });
+                const position = foundResult.position;
                 setMessages(prev => [...prev, {
                   id: getUniqueId(),
                   role: 'assistant',
@@ -590,31 +617,83 @@ Gunakan tag HTML sederhana seperti <b>, <i>, <a> untuk formatting, tapi jangan t
           setWaitingFor('');
         }
       } else {
-        // If not waiting for extra info, show apology and options
+        // If not waiting for extra info
         setMessages(prev => [
           ...prev,
           { id: getUniqueId(), role: 'user', content: val, type: 'text' }
         ]);
 
-        setIsTyping(true);
-        setTimeout(() => {
-          setMessages(prev => [
-            ...prev,
-            {
-              id: getUniqueId(),
-              role: 'assistant',
-              content: 'Maaf, kami tidak bisa membantu permintaan Anda. Silakan pilih opsi analisis yang tersedia.',
-              type: 'text'
-            },
-            {
-              id: getUniqueId(),
-              role: 'assistant',
-              content: 'Data apa yang ingin Anda lihat untuk website ini?',
-              type: 'options'
+        if (errorCount >= 2) {
+          setIsTyping(true);
+          setTimeout(() => {
+            setMessages(prev => [
+              ...prev,
+              {
+                id: getUniqueId(),
+                role: 'assistant',
+                content: 'Maaf, kami tidak bisa membantu permintaan Anda. Silakan pilih opsi analisis yang tersedia.',
+                type: 'text'
+              },
+              {
+                id: getUniqueId(),
+                role: 'assistant',
+                content:'apa yang ingin Anda lihat untuk website ini?',
+                type: 'options'
+              }
+            ]);
+            setIsTyping(false);
+          }, 1000);
+        } else {
+          // Send to API chat
+          setIsTyping(true);
+          (async () => {
+            try {
+              const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  messages: [
+                    { role: 'system', content: 'Anda adalah asisten AI yang membantu menganalisis performa website. Jawab pertanyaan pengguna dengan informasi yang berguna terkait website mereka.' },
+                    { role: 'user', content: ` ini adalah inputan user ke sistem kami "${val}", saya ingin anda menjawab dengan bahasa seperti manusia tapi jelaskan juga bahwa kita tidak bisa melakukan itu kami hanya bisa melakukan audit kualitas website, cek performance seo di search engine dan cek performanace brand di pencarian AI, saya tekankan dengan bahasa manusia dan bercanda jangan kaku` }
+                  ]
+                })
+              });
+              const data = await response.json();
+              if (response.ok) {
+                setMessages(prev => [...prev, {
+                  id: getUniqueId(),
+                  role: 'assistant',
+                  content: data.response,
+                  type: 'text'
+                },
+                   {
+                id: getUniqueId(),
+                role: 'assistant',
+                content:'Silakan pilih layanan yang ingin Anda butuhkan di bawah ini:',
+                type: 'options'
+              }]);
+              } else {
+                setMessages(prev => [...prev, {
+                  id: getUniqueId(),
+                  role: 'assistant',
+                  content: 'Maaf, terjadi kesalahan saat memproses permintaan Anda. Silakan coba lagi.',
+                  type: 'text'
+                }]);
+              }
+            } catch (error) {
+              setMessages(prev => [...prev, {
+                id: getUniqueId(),
+                role: 'assistant',
+                content: 'Maaf, terjadi kesalahan jaringan. Silakan coba lagi.',
+                type: 'text'
+              }]);
             }
-          ]);
-          setIsTyping(false);
-        }, 1000);
+            setErrorCount(prev => prev + 1);
+            setIsTyping(false);
+          })();
+        }
       }
     }
   };
