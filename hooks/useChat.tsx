@@ -234,7 +234,13 @@ export const useChat = () => {
               ),
 
               type: 'text'
-            },]);
+            },
+            {
+            id: getUniqueId(),
+            role: 'assistant',
+            content: 'ingin melakukan pengecekan lainnya?',
+            type: 'options'
+          }]);
           }
         } else {
           setMessages(prev => [...prev, {
@@ -356,7 +362,7 @@ export const useChat = () => {
                           <div key={index} className="p-3 bg-red-50 border border-red-100 rounded-lg">
                             <div key={index} className="flex items-start gap-2">
                               <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 flex-shrink-0" />
-                              <div className="flex-1">
+                              <div className="flex-1 overflow-auto">
                                 <h6 className="font-medium text-slate-800 text-sm">{issue.title}</h6>
                                 <p className="text-xs text-slate-600 mt-1">{issue.description}</p>
                                 {issue.displayValue && (
@@ -418,6 +424,12 @@ export const useChat = () => {
 
               type: 'text'
             },
+             {
+            id: getUniqueId(),
+            role: 'assistant',
+            content: 'ingin melakukan pengecekan lainnya?',
+            type: 'options'
+          },
             
           ]);
         }, 2000); // Delay after result
@@ -615,7 +627,13 @@ Gunakan tag HTML sederhana seperti <b>, <i>, <a> untuk formatting, tapi jangan t
                 role: 'assistant',
                 content: data.response,
                 type: 'text'
-              }]);
+              },
+             {
+            id: getUniqueId(),
+            role: 'assistant',
+            content: 'ingin melakukan pengecekan lainnya?',
+            type: 'options'
+          }]);
             } else {
               setMessages(prev => [...prev, {
                 id: getUniqueId(),

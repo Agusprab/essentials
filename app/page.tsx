@@ -25,7 +25,7 @@ export default function Home() {
 
       {/* Chat Area */}
       <main className="flex-1 overflow-y-auto px-4 py-8 mt-6">
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-2">
           {messages.map((msg) => (
             <ChatMessage
               key={msg.id}

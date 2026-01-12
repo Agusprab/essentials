@@ -11,7 +11,7 @@ export default function InputBar({ inputValue, onInputChange, onSubmit }: InputB
   };
 
   return (
-    <footer className="p-4 bg-white border-t border-slate-200">
+    <footer className="p-4 bg-white border-t border-slate-200 bottom-0">
       <div className="max-w-2xl mx-auto">
         <form onSubmit={handleSubmit} className="relative flex items-center">
           <input
@@ -31,9 +31,7 @@ export default function InputBar({ inputValue, onInputChange, onSubmit }: InputB
             </svg>
           </button>
         </form>
-        <p className="mt-2 text-[10px] text-center text-slate-400 uppercase tracking-widest font-bold">
-          Powered by Essentials AI Agent
-        </p>
+        
       </div>
     </footer>
   );
