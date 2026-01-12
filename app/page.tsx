@@ -17,6 +17,8 @@ export default function Home() {
     handleSendInput
   } = useChat();
 
+  const isOffline = process.env.NEXT_PUBLIC_STATUS_APP === 'OFFLINE';
+
   return (
     <div className="flex flex-col h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-blue-100">
       <Header />
@@ -37,14 +39,16 @@ export default function Home() {
         </div>
       </main>
 
-      <InputBar
-        inputValue={inputValue}
-        onInputChange={setInputValue}
-        onSubmit={(val) => {
-          handleSendInput(val);
-          setInputValue('');
-        }}
-      />
+      {!isOffline && (
+        <InputBar
+          inputValue={inputValue}
+          onInputChange={setInputValue}
+          onSubmit={(val) => {
+            handleSendInput(val);
+            setInputValue('');
+          }}
+        />
+      )}
     </div>
   );
 }

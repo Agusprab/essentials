@@ -30,6 +30,25 @@ export const useChat = () => {
   useEffect(() => {
     // Initial sequence
     const init = async () => {
+      const status = process.env.NEXT_PUBLIC_STATUS_APP;
+      if (status === 'OFFLINE') {
+        setMessages([
+          {
+            id: getUniqueId(),
+            role: 'assistant',
+            content: 'Sistem sedang offline.',
+            type: 'text'
+          },
+           {
+            id: getUniqueId(),
+            role: 'assistant',
+            content: 'Mohon maaf atas ketidaknyamanannya. Silakan coba lagi nanti atau hubungi kami untuk informasi lebih lanjut.',
+            type: 'text'
+          }
+        ]);
+        return;
+      }
+
       setIsTyping(true);
       await new Promise(r => setTimeout(r, 1000));
       setMessages([
@@ -181,7 +200,7 @@ export const useChat = () => {
             setMessages(prev => [...prev, {
               id: getUniqueId(),
               role: 'assistant',
-              content: `Posisi Anda di-${position}`,
+              content: `Website Anda muncul di posisi ke-${position} pada hasil pencarian **"${searchQuery}"** di halaman Google.`,
               type: 'text'
             }]);
           } else {
@@ -437,7 +456,7 @@ export const useChat = () => {
     if (currentUrl && !waitingFor) {
       const optionKeywords: Record<string, string[]> = {
         'Audit Kualitas Website': ['audit', 'kualitas', 'analisis', 'quality', 'analisa', 'review', 'evaluasi', 'inspection', 'assessment', 'diagnosis', 'scan', 'examine', 'verify', 'validate', 'inspeksi', 'penilaian', 'diagnosis', 'pemeriksaan', 'validasi'],
-        'Performance SEO Web Saya': ['seo','search', 'engine', 'optimization', 'web', 'ranking', 'peringkat', 'posisi', 'mesin', 'optimasi', 'google', 'serp', 'keyword', 'onpage', 'offpage', 'backlink', 'meta', 'title', 'description', 'mesin pencari', 'optimasi mesin pencari', 'peringkat google', 'seonya'],
+        'Performance SEO Web Saya': ['seo','search', 'engine', 'optimization',  'ranking', 'peringkat', 'posisi', 'mesin', 'optimasi',  'serp', 'keyword', 'onpage', 'offpage', 'backlink', 'meta', 'title', 'description', 'mesin pencari', 'optimasi mesin pencari', 'peringkat google', 'seonya'],
         'Performance Brand di AI Search': ['brand', 'ai', 'search', 'intelligence', 'merek', 'produk', 'kecerdasan', 'buatan', 'artificial', 'machine', 'learning', 'visibility', 'analytics', 'powered', 'kecerdasan buatan', 'performa merek', 'pencarian ai']
       };
 
@@ -521,7 +540,7 @@ export const useChat = () => {
                 setMessages(prev => [...prev, {
                   id: getUniqueId(),
                   role: 'assistant',
-                  content: `Posisi Anda di-${position}`,
+                  content: `Website Anda muncul di posisi ke-${position} pada hasil pencarian **"${searchQuery}"** di halaman Google.`,
                   type: 'text'
                 }]);
               } else {

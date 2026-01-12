@@ -1,3 +1,4 @@
+'use client';
 export default function Header() {
   return (
     <header className="flex items-center justify-between px-6 py-7 bg-white border-b border-slate-200">
@@ -12,8 +13,8 @@ export default function Header() {
        
       </div>
       <div className="flex items-center gap-2">
-        <div className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider">
-          Online
+        <div className={`px-3 py-1 ${process.env.NEXT_PUBLIC_STATUS_APP === 'OFFLINE' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'} text-xs font-bold rounded-full uppercase tracking-wider`}>
+          {process.env.NEXT_PUBLIC_STATUS_APP}
         </div>
       </div>
     </header>
