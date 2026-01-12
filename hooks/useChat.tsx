@@ -440,28 +440,30 @@ export const useChat = () => {
   const handleSendInput = async (val: string) => {
     if (!val.trim()) return;
 
-    // Check for greeting keywords
-    const greetingKeywords = ['halo', 'hai', 'hi', 'hello', 'selamat pagi', 'selamat siang', 'selamat malam', 'hey', 'apa kabar', 'bagaimana kabar','bantu'];
-    if (greetingKeywords.some(keyword => val.toLowerCase().includes(keyword))) {
-      setMessages(prev => [
-        ...prev,
-        { id: getUniqueId(), role: 'user', content: val, type: 'text' }
-      ]);
-
-      setIsTyping(true);
-      setTimeout(() => {
+    // Check for greeting keywords only if URL is already set
+    if (currentUrl) {
+      const greetingKeywords = ['halo', 'hai', 'hi', 'hello', 'selamat pagi', 'selamat siang', 'selamat malam', 'hey', 'apa kabar', 'bagaimana kabar','bantu'];
+      if (greetingKeywords.some(keyword => val.toLowerCase().includes(keyword))) {
         setMessages(prev => [
           ...prev,
-          {
-            id: getUniqueId(),
-            role: 'assistant',
-            content: 'Halo! Bagaimana saya bisa membantu Anda hari ini?',
-            type: 'options'
-          }
+          { id: getUniqueId(), role: 'user', content: val, type: 'text' }
         ]);
-        setIsTyping(false);
-      }, 1000);
-      return;
+
+        setIsTyping(true);
+        setTimeout(() => {
+          setMessages(prev => [
+            ...prev,
+            {
+              id: getUniqueId(),
+              role: 'assistant',
+              content: 'Halo! Bagaimana saya bisa membantu Anda hari ini?',
+              type: 'options'
+            }
+          ]);
+          setIsTyping(false);
+        }, 1000);
+        return;
+      }
     }
 
     // Check if input matches any available options (always available if URL is set and not waiting)
