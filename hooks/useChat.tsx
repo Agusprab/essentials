@@ -552,9 +552,14 @@ export const useChat = () => {
                 setMessages(prev => [...prev, {
                   id: getUniqueId(),
                   role: 'assistant',
-                  content: `Website Anda muncul di posisi ke-${position} pada hasil pencarian **"${searchQuery}"** di halaman Google.`,
+                  content: `Website Anda muncul di posisi ke-${position} pada hasil pencarian **"${val}"** di halaman Google.`,
                   type: 'text'
-                }]);
+                },{
+            id: getUniqueId(),
+            role: 'assistant',
+            content: 'ingin melakukan pengecekan lainnya?',
+            type: 'options'
+          }]);
               } else {
                 setMessages(prev => [...prev, {
                   id: getUniqueId(),
