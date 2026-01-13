@@ -8,7 +8,7 @@ export default function Header() {
       sm:w-25 sm:h-25
       md:w-28 md:h-28
       lg:w-40 lg:h-40
-      absolute top-0 left-8 sm:left-35"/>
+      absolute top-0 left-8 sm:left-35 z-50"/>
         </div>
        
       </div>
