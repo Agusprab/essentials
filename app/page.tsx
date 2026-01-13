@@ -24,8 +24,9 @@ export default function Home() {
       <Header />
 
       {/* Chat Area */}
-      <main className="flex-1 overflow-y-auto px-4 py-8 mt-6">
-        <div className="max-w-2xl mx-auto space-y-2">
+      <main className="flex-1 overflow-y-auto px-4 pt-5 w-full mx-auto ">
+       <div className="bg-[#FFFFFF] rounded-t-2xl shadow-md pt-4 pb-10 mt-4 w-[95%] mx-auto ">
+         <div className="max-w-2xl mx-auto space-y-2 pt-4">
           {messages.map((msg) => (
             <ChatMessage
               key={msg.id}
@@ -37,6 +38,7 @@ export default function Home() {
           {isTyping && <TypingIndicator />}
           <div ref={messagesEndRef} />
         </div>
+       </div>
       </main>
 
       {!isOffline && (
