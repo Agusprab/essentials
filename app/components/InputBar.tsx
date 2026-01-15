@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 interface InputBarProps {
   inputValue: string;
   onInputChange: (value: string) => void;
@@ -5,6 +7,7 @@ interface InputBarProps {
 }
 
 export default function InputBar({ inputValue, onInputChange, onSubmit }: InputBarProps) {
+  const { t } = useTranslation();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(inputValue);
@@ -18,7 +21,7 @@ export default function InputBar({ inputValue, onInputChange, onSubmit }: InputB
             type="text"
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
-            placeholder="Masukkan URL website atau pesan..."
+            placeholder={t('inputBar.placeholder')}
             className="w-full pl-4 pr-12 py-3 bg-slate-100 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all outline-none"
           />
           <button

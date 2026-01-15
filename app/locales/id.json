@@ -1,0 +1,45 @@
+{
+  "header": {
+    "logoAlt": "Logo AI Essentials"
+  },
+  "inputBar": {
+    "placeholder": "Masukkan URL website atau pesan..."
+  },
+  "chat": {
+    "placeholder": "Ketik pesan Anda...",
+    "send": "Kirim",
+    "offline": "Sistem sedang offline.",
+    "offlineApology": "Mohon maaf atas ketidaknyamanannya. Silakan coba lagi nanti atau hubungi kami untuk informasi lebih lanjut.",
+    "greeting": "Halo! Saya asisten AI Anda. Saya bisa membantu Anda menganalisis performa dan kualitas website Anda.",
+    "enterUrl": "Silakan masukkan URL website yang ingin Anda analisis.",
+    "invalidUrl": "URL tidak valid atau domain tidak dapat diakses. Silakan masukkan ulang URL atau domain yang valid.",
+    "goodUrl": "Bagus! Data apa yang ingin Anda lihat untuk website ini?",
+    "auditOptions": [
+      { "key": "audit", "label": "Audit Kualitas Website" },
+      { "key": "seo", "label": "Performance SEO Web Saya" },
+      { "key": "brand", "label": "Performance Brand di AI Search" }
+    ],
+    "processing": "Proses memakan waktu 1-2 menit. Mohon tunggu...",
+    "analyzing": "Menganalisis <strong>{{option}}</strong> untuk {{currentUrl}}",
+    "withFocus": " dengan fokus \"{{extraInfo}}\"",
+    "websitePosition": "Website Anda muncul di posisi ke-{{position}} pada hasil pencarian **\"{{query}}\"** di halaman Google.",
+    "helpMessage": "Jika Anda tidak bisa memperbaiki masalah ini, kami siap membantu!",
+    "whatsappMessage": "Hubungi Kami via WhatsApp",
+    "checkquestion": "ingin melakukan pengecekan lainnya?",
+    "keywordAnalysisSeo" : "Untuk analisis SEO yang lebih akurat, apa keyword utama yang ingin Anda targetkan?",
+    "resultAnalysisSeo" : "Berikut hasil pencarian untuk **\"{{keyword}}\"** (Google page Ke-{{page}}):",
+    "keywordAnalysisAI" : "Apa yang biasanya dicari konsumen tentang kategori brand Anda?",
+    "exampleKeywordAnalysisAI" : "Contoh seperti \"sepatu lari\", \"smartphone terbaru\", atau \"makanan sehat\".",
+    "answerHelpBrand": "Kami siap untuk meningkatkan performa brand Anda. Hubungi kami untuk konsultasi lebih lanjut.",
+    "nextPage": "Lihat page berikutnya",
+    "websiteNotFound": "Website tidak ditemukan di halaman 1. Lihat halaman berikutnya?",
+    "websiteNotFoundThisPage": "Website tidak ditemukan di halaman ini.",
+    "consultFurther": "Konsultasikan lebih lanjut dengan kami jika Anda memerlukan bantuan untuk meningkatkan peringkat website Anda.",
+    "brandUserPrompt": "Buat respons terstruktur untuk pencarian frase \"{{val}}\" dengan format seperti contoh berikut, tapi isi dengan data nyata berdasarkan pencarian Anda:\n\nBerikut hasil pencarian dengan kata kunci <b>\"{{val}}\"</b> berdasarkan evaluasi dari berbagai sumber dan review pengguna di internet. Saya melakukan pencarian tanpa terpaku pada link yang Anda berikan, sehingga fokus utama adalah mencari [jenis pencarian] yang memang populer dan banyak direkomendasikan. Berikut informasi dan daftar 5 [jenis item] terbaik:\n\n**[Nama Item 1]**\n[Deskripsi panjang tentang item 1].\n\n**[Nama Item 2]**\n[Deskripsi panjang].\n\n[Lanjutkan untuk 5 item]\n\n**Catatan penting:**\n\n[Catatan tentang website {{currentUrl}} jika relevan].\n\nDaftar di atas berdasarkan [sumber].\n\nJika fokus Anda adalah melakukan pengecekan performa website {{currentUrl}} dalam konteks pencarian tersebut, maka [analisis posisi].\n\nGunakan tag HTML sederhana seperti <b>, <i>, <a> untuk formatting, tapi jangan tampilkan tag di output - output harus sudah dirender.",
+    "brandSystemPrompt": "Anda adalah asisten AI yang membantu menganalisis performa brand di AI Search."
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline"
+  }
+}

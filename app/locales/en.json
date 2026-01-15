@@ -1,0 +1,45 @@
+{
+  "header": {
+    "logoAlt": "AI Essentials Logo"
+  },
+  "inputBar": {
+    "placeholder": "Enter website URL or message..."
+  },
+  "chat": {
+    "placeholder": "Type your message...",
+    "send": "Send",
+    "offline": "System is currently offline.",
+    "offlineApology": "We apologize for the inconvenience. Please try again later or contact us for more information.",
+    "greeting": "Hello! I am your AI assistant. I can help you analyze the performance and quality of your website.",
+    "enterUrl": "Please enter the website URL you want to analyze.",
+    "invalidUrl": "Invalid URL or domain cannot be accessed. Please re-enter a valid URL or domain.",
+    "goodUrl": "Great! What data would you like to see for this website?",
+    "auditOptions": [
+      { "key": "audit", "label": "Website Quality Audit" },
+      { "key": "seo", "label": "My Website SEO Performance" },
+      { "key": "brand", "label": "My Brand Performance in AI Search" }
+    ],
+    "processing": "Process takes 1-2 minutes. Please wait...",
+    "analyzing": "Analyzing <strong>{{option}}</strong> for {{currentUrl}}",
+    "withFocus": " with focus on \"{{extraInfo}}\"",
+    "websitePosition": "Your website appears in position {{position}} in the search results for **\"{{query}}\"** on Google.",
+    "helpMessage": "If you can't fix this issue, we're here to help!",
+    "whatsappMessage": "Contact Us via WhatsApp",
+    "checkquestion": "would you like to perform another check?",
+    "keywordAnalysisSeo" : "For a more accurate SEO analysis, what is the main keyword you want to target?",
+    "resultAnalysisSeo" : "Here are the search results for **\"{{keyword}}\"** (Google page {{page}}):",
+    "keywordAnalysisAI" : "What do consumers usually search for about your brand category?",
+    "exampleKeywordAnalysisAI" : "Examples include \"running shoes\", \"latest smartphones\", or \"healthy food\".",
+       "answerHelpBrand": "We are ready to improve your brand performance. Contact us for further consultation.",
+    "nextPage": "See next page",
+    "websiteNotFound": "Website not found on page 1. See next page?",
+    "websiteNotFoundThisPage": "Website not found on this page.",
+    "consultFurther": "Consult with us further if you need help to improve your website ranking.",
+    "brandUserPrompt": "Create a structured response for the search phrase \"{{val}}\" with a format like the following example, but fill it with real data based on your search:\n\nHere are the search results for the keyword <b>\"{{val}}\"</b> based on evaluations from various sources and user reviews on the internet. I did the search without being fixated on the link you provided, so the main focus was on finding [search type] which is popular and widely recommended. Here is the information and list of the 5 best [item types]:\n\n**[Item Name 1]**\n[Long description of item 1].\n\n**[Item Name 2]**\n[Long description].\n\n[Continue for 5 items]\n\n**Important notes:**\n\n[Notes about the {{currentUrl}} website if relevant].\n\nThe above list is based on [source].\n\nIf your focus is to check the performance of the {{currentUrl}} website in the context of that search, then [position analysis].\n\nUse simple HTML tags like <b>, <i>, <a> for formatting, but do not show the tags in the output - the output should already be rendered.",
+    "brandSystemPrompt": "You are an AI assistant that helps analyze brand performance in AI Search."
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline"
+  }
+}

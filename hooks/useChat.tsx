@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Message } from '../types/chat';
 import { fetchPageSpeedData, processPageSpeedData } from '../utils/pageSpeed';
 
 export const useChat = () => {
+  const { i18n } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -19,6 +21,41 @@ export const useChat = () => {
     return `msg_${messageIdCounter.current}`;
   };
 
+
+
+  const translateMessage = async (content: string, targetLang: string) => {
+    if (!content || typeof content !== 'string') return content;
+    
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content: `You are a translator. Translate the following text to ${targetLang === 'id' ? 'Indonesian' : 'English'}. Only return the translated text, no explanations.`
+            },
+            {
+              role: 'user',
+              content: content
+            }
+          ]
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.response || content;
+      }
+    } catch (error) {
+      console.error('Translation error:', error);
+    }
+    return content;
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -26,6 +63,27 @@ export const useChat = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    const handleLanguageChange = async () => {
+      if (messages.length > 0) {
+        setIsTyping(true);
+        const translatedMessages = await Promise.all(
+          messages.map(async (msg) => {
+            if (typeof msg.content === 'string' && msg.role === 'assistant') {
+              const translatedContent = await translateMessage(msg.content, i18n.language);
+              return { ...msg, content: translatedContent };
+            }
+            return msg;
+          })
+        );
+        setMessages(translatedMessages);
+        setIsTyping(false);
+      }
+    };
+
+    handleLanguageChange();
+  }, [i18n.language]);
 
   useEffect(() => {
     // Initial sequence
@@ -36,13 +94,13 @@ export const useChat = () => {
           {
             id: getUniqueId(),
             role: 'assistant',
-            content: 'Sistem sedang offline.',
+            content: i18n.t('chat.offline'),
             type: 'text'
           },
            {
             id: getUniqueId(),
             role: 'assistant',
-            content: 'Mohon maaf atas ketidaknyamanannya. Silakan coba lagi nanti atau hubungi kami untuk informasi lebih lanjut.',
+            content: i18n.t('chat.offlineApology'),
             type: 'text'
           }
         ]);
@@ -55,7 +113,7 @@ export const useChat = () => {
         {
           id: getUniqueId(),
           role: 'assistant',
-          content: 'Halo! Saya asisten AI Anda. Saya bisa membantu Anda menganalisis performa dan kualitas website Anda.',
+          content: i18n.t('chat.greeting'),
           type: 'text'
         }
       ]);
@@ -64,7 +122,7 @@ export const useChat = () => {
       setMessages(prev => [...prev, {
         id: getUniqueId(),
         role: 'assistant',
-        content: 'Silakan masukkan URL website yang ingin Anda analisis.',
+        content: i18n.t('chat.enterUrl'),
         type: 'input'
       }]);
       setIsTyping(false);
@@ -86,7 +144,7 @@ export const useChat = () => {
         {
           id: getUniqueId(),
           role: 'assistant',
-          content: 'URL tidak valid atau domain tidak dapat diakses. Silakan masukkan ulang URL atau domain yang valid.',
+          content: i18n.t('chat.invalidUrl'),
           type: 'input'
         }
       ]);
@@ -108,19 +166,22 @@ export const useChat = () => {
         {
           id: getUniqueId(),
           role: 'assistant',
-          content: 'Bagus! Data apa yang ingin Anda lihat untuk website ini?',
+          content: i18n.t('chat.goodUrl'),
           type: 'options',
-          options: ['Audit Kualitas Website', 'Performance SEO Web Saya', 'Performance Brand di AI Search']
+          options: i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[]
         }
       ]);
       setIsTyping(false);
     }, 1000);
   };
 
-  const handleOptionSelect = async (option: string) => {
+  const handleOptionSelect = async (optionKey: string) => {
     setIsTyping(true);
 
-    if (option === 'Audit Kualitas Website') {
+    const options = i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[];
+    const selectedOption = options.find(opt => opt.key === optionKey);
+
+    if (optionKey === 'audit') {
       // Add temporary message
       const tempMessageId = getUniqueId();
       setMessages(prev => [
@@ -128,19 +189,19 @@ export const useChat = () => {
         {
           id: tempMessageId,
           role: 'assistant',
-          content: 'Proses memakan waktu 1-2 menit. Mohon tunggu...',
+          content: i18n.t('chat.processing'),
           type: 'text'
         }
       ]);
 
       // Fetch data from PageSpeed API
-      const data = await fetchPageSpeedData(currentUrl);
+      const data = await fetchPageSpeedData(currentUrl, i18n.language);
 
       // Remove temporary message
       setMessages(prev => prev.filter(msg => msg.id !== tempMessageId));
 
       if (data) {
-        showResult(option, undefined, data);
+        showResult(selectedOption?.label || optionKey, undefined, data);
       } else {
         // Handle error
         setMessages(prev => [
@@ -154,7 +215,7 @@ export const useChat = () => {
         ]);
       }
       setIsTyping(false);
-    } else if (option === 'Lihat page berikutnya') {
+    } else if (optionKey === 'nextPage') {
       // Fetch next page
       setIsTyping(true);
       try {
@@ -181,7 +242,7 @@ export const useChat = () => {
             return resultDomain === currentDomain;
           });
 
-          const content = `Berikut hasil pencarian untuk **"${searchQuery}"** (Google page Ke-${searchPage}):\n\n${formattedResults}`;
+          const content = i18n.t('chat.resultAnalysisSeo', { keyword: searchQuery, page: searchPage }) + `\n\n${formattedResults}`;
 
           setMessages(prev => [...prev, {
             id: getUniqueId(),
@@ -207,13 +268,13 @@ export const useChat = () => {
             setMessages(prev => [...prev, {
               id: getUniqueId(),
               role: 'assistant',
-              content: 'Website tidak ditemukan di halaman ini.',
+              content: i18n.t('chat.websiteNotFoundThisPage'),
               type: 'text'
             },
               {
-              id: getUniqueId(),
+              id: getUniqueId(),  
               role: 'assistant',
-              content: 'Konsultasikan lebih lanjut dengan kami jika Anda memerlukan bantuan untuk meningkatkan peringkat website Anda.',
+              content: i18n.t('chat.consultFurther'),
               type: 'text'
             },
             {
@@ -229,7 +290,7 @@ export const useChat = () => {
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
                   </svg>
-                  Hubungi Kami via WhatsApp
+                  {i18n.t('chat.whatsappMessage')}
                 </a>
               ),
 
@@ -238,8 +299,9 @@ export const useChat = () => {
             {
             id: getUniqueId(),
             role: 'assistant',
-            content: 'ingin melakukan pengecekan lainnya?',
-            type: 'options'
+            content: i18n.t('chat.checkquestion'),
+            type: 'options',
+            options: i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[]
           }]);
           }
         } else {
@@ -262,31 +324,31 @@ export const useChat = () => {
     } else {
       // For other options, keep the existing logic
       setTimeout(() => {
-        if (option === 'Performance SEO Web Saya') {
+        if (optionKey === 'seo') {
           setWaitingFor('seo');
           setMessages(prev => [
             ...prev,
             {
               id: getUniqueId(),
               role: 'assistant',
-              content: 'Untuk analisis SEO yang lebih akurat, apa keyword utama yang ingin Anda targetkan?',
+              content: i18n.t('chat.keywordAnalysisSeo'),
               type: 'input'
             }
           ]);
-        } else if (option === 'Performance Brand di AI Search') {
+        } else if (optionKey === 'brand') {
           setWaitingFor('brand');
           setMessages(prev => [
             ...prev,
             {
               id: getUniqueId(),
               role: 'assistant',
-              content: 'Apa yang biasanya dicari konsumen tentang kategori brand Anda?',
+              content: i18n.t('chat.keywordAnalysisAI'),
               type: 'input'
             }
             ,{
             id: getUniqueId(),
             role: 'assistant',
-            content: 'Contoh seperti "sepatu lari", "smartphone terbaru", atau "makanan sehat".',
+            content: i18n.t('chat.exampleKeywordAnalysisAI'),
             type: 'text'
           }
           ]);
@@ -308,7 +370,7 @@ export const useChat = () => {
           role: 'assistant',
           content: (
             <div className="space-y-4">
-              <p>Menganalisis <strong>{option}</strong> untuk {currentUrl}{extraInfo ? ` dengan fokus "${extraInfo}"` : ''}...</p>
+              <p dangerouslySetInnerHTML={{ __html: i18n.t('chat.analyzing', { option, currentUrl, extraInfo }) }} />
               <div className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Analysis Report</span>
@@ -318,7 +380,7 @@ export const useChat = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-slate-800">Skor Keseluruhan: {overallScore}/100</h4>
+                  <h4 className="font-semibold text-slate-800">{i18n.t('chat.overallScore', { overallScore })}</h4>
             
                   {data && (
                     <div className="grid grid-cols-4 gap-4 text-xs">
@@ -402,7 +464,7 @@ export const useChat = () => {
             {
               id: getUniqueId(),
               role: 'assistant',
-              content: 'Jika Anda tidak bisa memperbaiki masalah ini, kami siap membantu!',
+              content: i18n.t('chat.helpMessage'),
               type: 'text'
             },
             {
@@ -418,17 +480,18 @@ export const useChat = () => {
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
                   </svg>
-                  Hubungi Kami via WhatsApp
+                  {i18n.t('chat.whatsappMessage')}
                 </a>
               ),
 
               type: 'text'
             },
-             {
+            {
             id: getUniqueId(),
             role: 'assistant',
-            content: 'ingin melakukan pengecekan lainnya?',
-            type: 'options'
+            content: i18n.t('chat.checkquestion'),
+            type: 'options',
+            options: i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[]
           },
             
           ]);
@@ -535,7 +598,7 @@ export const useChat = () => {
                 return resultDomain === currentDomain;
               });
 
-              const content = `Berikut hasil pencarian untuk **"${val}"** (Google page Ke-${searchPage}):\n\n${formattedResults}`;
+              const content = i18n.t('chat.resultAnalysisSeo', { keyword: val, page: searchPage }) + `\n\n${formattedResults}`;
               setMessages(prev => [...prev, {
                 id: getUniqueId(),
                 role: 'assistant',
@@ -554,21 +617,22 @@ export const useChat = () => {
                 setMessages(prev => [...prev, {
                   id: getUniqueId(),
                   role: 'assistant',
-                  content: `Website Anda muncul di posisi ke-${position} pada hasil pencarian **"${val}"** di halaman Google.`,
+                  content: i18n.t('chat.websitePosition', { position, query: val }),
                   type: 'text'
                 },{
             id: getUniqueId(),
             role: 'assistant',
-            content: 'ingin melakukan pengecekan lainnya?',
-            type: 'options'
+            content: i18n.t('chat.checkquestion'),
+            type: 'options',
+            options: i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[]
           }]);
               } else {
                 setMessages(prev => [...prev, {
                   id: getUniqueId(),
                   role: 'assistant',
-                  content: 'Website tidak ditemukan di halaman 1. Lihat halaman berikutnya?',
+                  content: i18n.t('chat.websiteNotFound'),
                   type: 'options',
-                  options: ['Lihat page berikutnya']
+                  options: [{ key: 'nextPage', label: i18n.t('chat.nextPage') }]
                 }]);
                 setSearchPage(2);
               }
@@ -600,32 +664,13 @@ export const useChat = () => {
               },
               body: JSON.stringify({
                 messages: [
-                  { role: 'system', content: 'Anda adalah asisten AI yang membantu menganalisis performa brand di AI Search.' },
-                  { role: 'user', content: `Buat respons terstruktur untuk pencarian frase "${val}" dengan format seperti contoh berikut, tapi isi dengan data nyata berdasarkan pencarian Anda:
-
-Berikut hasil pencarian dengan kata kunci <b>"${val}"</b> berdasarkan evaluasi dari berbagai sumber dan review pengguna di internet. Saya melakukan pencarian tanpa terpaku pada link yang Anda berikan, sehingga fokus utama adalah mencari [jenis pencarian] yang memang populer dan banyak direkomendasikan. Berikut informasi dan daftar 5 [jenis item] terbaik:
-
-<b>[Nama Item 1]</b>
-[Deskripsi panjang tentang item 1].
-
-<b>[Nama Item 2]</b>
-[Deskripsi panjang].
-
-[Lanjutkan untuk 5 item]
-
-<b>Catatan penting:</b>
-
-[Catatan tentang website ${currentUrl} jika relevan].
-
-Daftar di atas berdasarkan [sumber].
-
-Jika fokus Anda adalah melakukan pengecekan performa website ${currentUrl} dalam konteks pencarian tersebut, maka [analisis posisi].
-
-Gunakan tag HTML sederhana seperti <b>, <i>, <a> untuk formatting, tapi jangan tampilkan tag di output - output harus sudah dirender.` }
+                  { role: 'system', content: i18n.t('chat.brandSystemPrompt') },
+                  { role: 'user', content: i18n.t('chat.brandUserPrompt', { val, currentUrl }) }
                 ]
               })
             });
             const data = await response.json();
+            console.log(data);
             if (response.ok) {
               setMessages(prev => [...prev, {
                 id: getUniqueId(),
@@ -635,7 +680,7 @@ Gunakan tag HTML sederhana seperti <b>, <i>, <a> untuk formatting, tapi jangan t
               },{
                 id: getUniqueId(),
                 role: 'assistant',
-                content: 'Kami siap untuk meningkatkan performa brand Anda. Hubungi kami untuk konsultasi lebih lanjut.',
+                content: i18n.t('chat.answerHelpBrand'),
                 type: 'text'
               },
               {
@@ -651,7 +696,7 @@ Gunakan tag HTML sederhana seperti <b>, <i>, <a> untuk formatting, tapi jangan t
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
                     </svg>
-                    Hubungi Kami via WhatsApp
+                      {i18n.t('chat.whatsappMessage')}
                   </a>
                 ),
                 type: 'text'
@@ -659,8 +704,9 @@ Gunakan tag HTML sederhana seperti <b>, <i>, <a> untuk formatting, tapi jangan t
              {
             id: getUniqueId(),
             role: 'assistant',
-            content: 'ingin melakukan pengecekan lainnya?',
-            type: 'options'
+            content: i18n.t('chat.checkquestion'),
+            type: 'options',
+            options: i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[]
           }]);
             } else {
               setMessages(prev => [...prev, {
@@ -714,7 +760,7 @@ Gunakan tag HTML sederhana seperti <b>, <i>, <a> untuk formatting, tapi jangan t
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
                     </svg>
-                    Hubungi Kami via WhatsApp
+                      {i18n.t('chat.whatsappMessage')}
                   </a>
                 ),
                 type: 'text'

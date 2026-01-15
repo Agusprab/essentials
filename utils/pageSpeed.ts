@@ -1,5 +1,5 @@
-export const fetchPageSpeedData = async (url: string) => {
-  const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=AIzaSyCS5HXo4toefx5X-A5koYPnxflAiWebG9c&strategy=desktop&category=performance&category=seo&category=best-practices&category=accessibility&locale=id`;
+export const fetchPageSpeedData = async (url: string, language: string = 'id') => {
+  const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=AIzaSyCS5HXo4toefx5X-A5koYPnxflAiWebG9c&strategy=desktop&category=performance&category=seo&category=best-practices&category=accessibility&locale=${language}`;
   try {
     const response = await fetch(apiUrl);
     if (!response.ok) {

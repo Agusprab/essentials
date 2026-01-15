@@ -1,10 +1,12 @@
 'use client';
 
-import Header from './components/Header';
+import dynamic from 'next/dynamic';
 import ChatMessage from './components/ChatMessage';
 import TypingIndicator from './components/TypingIndicator';
-import InputBar from './components/InputBar';
 import { useChat } from '../hooks/useChat';
+
+const Header = dynamic(() => import('./components/Header'), { ssr: false });
+const InputBar = dynamic(() => import('./components/InputBar'), { ssr: false });
 
 export default function Home() {
   const {
@@ -19,6 +21,8 @@ export default function Home() {
 
   const isOffline = process.env.NEXT_PUBLIC_STATUS_APP === 'OFFLINE';
 
+
+  
   return (
     <div className="flex flex-col h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-blue-100">
       <Header />

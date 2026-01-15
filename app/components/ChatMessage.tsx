@@ -50,19 +50,19 @@ export default function ChatMessage({ message, onOptionSelect }: ChatMessageProp
 
         {message.type === 'options' && (
           <div className="mt-4 grid grid-cols-1 gap-2">
-            {(message.options || [
-              'Audit Kualitas Website',
-              'Performance SEO Web Saya',
-              'Performance Brand di AI Search'
-            ]).map((opt) => (
-              <button
-                key={opt}
-                onClick={() => onOptionSelect(opt)}
-                className="text-left px-4 py-2.5 text-sm bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-all active:scale-[0.98]"
-              >
-                {opt}
-              </button>
-            ))}
+            {(message.options || []).map((opt: any, index: number) => {
+              const key = typeof opt === 'string' ? opt : opt.key;
+              const label = typeof opt === 'string' ? opt : opt.label;
+              return (
+                <button
+                  key={key || index}
+                  onClick={() => onOptionSelect(key)}
+                  className="text-left px-4 py-2.5 text-sm bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-all active:scale-[0.98]"
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
