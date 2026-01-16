@@ -11,7 +11,7 @@ export default function Header() {
     { code: 'id', name: 'ID', flag: '🇮🇩' },
   ];
 
-  const currentLang = languages.find(lang => lang.code === i18n.language);
+  const currentLang = languages.find(lang => lang.code === i18n.language) || languages.find(lang => lang.code === 'id');
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);

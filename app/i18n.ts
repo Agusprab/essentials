@@ -19,6 +19,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
+    lng: 'id', // Set default language explicitly
     fallbackLng: 'id',
     detection: {
       order: ['localStorage', 'navigator'],
