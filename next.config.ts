@@ -1,3 +1,4 @@
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   async headers() {
     return [
@@ -5,12 +6,8 @@ const nextConfig = {
         source: "/(.*)",
         headers: [
           {
-            key: "X-Frame-Options",
-            value: "ALLOWALL",
-          },
-          {
             key: "Content-Security-Policy",
-            value: "frame-ancestors https://essentials.id https://essentials-tau.vercel.app",
+            value: "frame-ancestors 'self' https://essentials.id https://essentials-tau.vercel.app",
           },
         ],
       },
