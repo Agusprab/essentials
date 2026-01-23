@@ -10,7 +10,7 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "frame-ancestors https://chat.essentials.id",
+            value: "frame-ancestors https://essentials.id",
           },
         ],
       },
