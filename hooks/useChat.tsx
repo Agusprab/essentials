@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Message } from '../types/chat';
 import { fetchPageSpeedData, processPageSpeedData } from '../utils/pageSpeed';
+import { supabase } from '../utils/supabase';
 
 export const useChat = () => {
   const { i18n } = useTranslation();
@@ -152,6 +153,25 @@ export const useChat = () => {
     }
 
     setCurrentUrl(validatedUrl);
+
+    // Send data to Supabase
+    try {
+      const ipResponse = await fetch('https://api.ipify.org?format=json');
+      const ipData = await ipResponse.json();
+      const ip = ipData.ip;
+
+      await supabase
+        .from('url_visitor')
+        .insert([
+          {
+            ip: ip,
+            url_input: validatedUrl,
+          },
+        ]);
+    } catch (error) {
+      console.error('Error saving to Supabase:', error);
+      // Don't block the flow if Supabase fails
+    }
 
     setMessages(prev => [
       ...prev,
