@@ -10,7 +10,7 @@
     "send": "Send",
     "offline": "System is currently offline.",
     "offlineApology": "We apologize for the inconvenience. Please try again later or contact us for more information.",
-  "greeting": "Hello, I am **ESSA** (**ES**sentials the agency **S**eo **A**i assistant), I can help you analyze the performance and SEO of your website.",
+  "greeting": "Hello, I am **ESSA** (**ES**sentials the agency **S**eo **A**I assistant), I can help you analyze the performance and SEO of your website.",
     "enterUrl": "Please enter the website URL you want to analyze.",
     "invalidUrl": "Invalid URL or domain cannot be accessed. Please re-enter a valid URL or domain.",
     "goodUrl": "Great! What data would you like to see for this website?",
