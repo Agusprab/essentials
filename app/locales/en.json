@@ -36,7 +36,8 @@
     "websiteNotFoundThisPage": "Website not found on this page.",
     "consultFurther": "Consult with us further if you need help to improve your website ranking.",
     "brandUserPrompt": "Create a structured response for the search phrase \"{{val}}\" with a format like the following example, but fill it with real data based on your search:\n\nHere are the search results for the keyword <b>\"{{val}}\"</b> based on evaluations from various sources and user reviews on the internet. I did the search without being fixated on the link you provided, so the main focus was on finding [search type] which is popular and widely recommended. Here is the information and list of the 5 best [item types]:\n\n**[Item Name 1]**\n[Long description of item 1].\n\n**[Item Name 2]**\n[Long description].\n\n[Continue for 5 items]\n\n**Important notes:**\n\n[Notes about the {{currentUrl}} website if relevant].\n\nThe above list is based on [source].\n\nIf your focus is to check the performance of the {{currentUrl}} website in the context of that search, then [position analysis].\n\nUse simple HTML tags like <b>, <i>, <a> for formatting, but do not show the tags in the output - the output should already be rendered.",
-    "brandSystemPrompt": "You are an AI assistant that helps analyze brand performance in AI Search."
+    "brandSystemPrompt": "You are an AI assistant that helps analyze brand performance in AI Search.",
+    "overallScore": "Overall Score: {{overallScore}}"
   },
   "status": {
     "online": "Online",
