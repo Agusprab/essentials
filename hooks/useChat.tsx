@@ -14,6 +14,7 @@ export const useChat = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchPage, setSearchPage] = useState(1);
   const [errorCount, setErrorCount] = useState(0);
+  const [hasSelectedOption, setHasSelectedOption] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdCounter = useRef(0);
 
@@ -86,50 +87,55 @@ export const useChat = () => {
     handleLanguageChange();
   }, [i18n.language]);
 
-  useEffect(() => {
-    // Initial sequence
-    const init = async () => {
-      const status = process.env.NEXT_PUBLIC_STATUS_APP;
-      if (status === 'OFFLINE') {
-        setMessages([
-          {
-            id: getUniqueId(),
-            role: 'assistant',
-            content: i18n.t('chat.offline'),
-            type: 'text'
-          },
-           {
-            id: getUniqueId(),
-            role: 'assistant',
-            content: i18n.t('chat.offlineApology'),
-            type: 'text'
-          }
-        ]);
-        return;
-      }
-
-      setIsTyping(true);
-      await new Promise(r => setTimeout(r, 1000));
+  const startChat = async () => {
+    const status = process.env.NEXT_PUBLIC_STATUS_APP;
+    if (status === 'OFFLINE') {
       setMessages([
         {
           id: getUniqueId(),
           role: 'assistant',
-          content: i18n.t('chat.greeting'),
+          content: i18n.t('chat.offline'),
+          type: 'text'
+        },
+         {
+          id: getUniqueId(),
+          role: 'assistant',
+          content: i18n.t('chat.offlineApology'),
           type: 'text'
         }
       ]);
+      return;
+    }
 
-      await new Promise(r => setTimeout(r, 800));
-      setMessages(prev => [...prev, {
+    setIsTyping(true);
+    await new Promise(r => setTimeout(r, 1000));
+    setMessages([
+      {
         id: getUniqueId(),
         role: 'assistant',
-        content: i18n.t('chat.enterUrl'),
-        type: 'input'
-      }]);
-      setIsTyping(false);
-    };
-    init();
+        content: i18n.t('chat.greeting'),
+        type: 'text'
+      }
+    ]);
+
+    await new Promise(r => setTimeout(r, 800));
+    setMessages(prev => [...prev, {
+      id: getUniqueId(),
+      role: 'assistant',
+      content: i18n.t('chat.enterUrl'),
+      type: 'input'
+    }]);
+    setIsTyping(false);
+  };
+
+  useEffect(() => {
+    startChat();
   }, []);
+
+  const getOptions = () => {
+    const base = i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[];
+    return hasSelectedOption ? [...base, { key: 'newChat', label: 'Mulai Chat Baru' }] : base;
+  };
 
   const handleSendUrl = async (url: string) => {
     if (!url.trim()) return;
@@ -188,7 +194,7 @@ export const useChat = () => {
           role: 'assistant',
           content: i18n.t('chat.goodUrl'),
           type: 'options',
-          options: i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[]
+          options: getOptions()
         }
       ]);
       setIsTyping(false);
@@ -235,6 +241,7 @@ export const useChat = () => {
         ]);
       }
       setIsTyping(false);
+      setHasSelectedOption(true);
     } else if (optionKey === 'nextPage') {
       // Fetch next page
       setIsTyping(true);
@@ -321,7 +328,7 @@ export const useChat = () => {
             role: 'assistant',
             content: i18n.t('chat.checkquestion'),
             type: 'options',
-            options: i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[]
+            options: getOptions()
           }]);
           }
         } else {
@@ -341,10 +348,19 @@ export const useChat = () => {
         }]);
       }
       setIsTyping(false);
+    } else if (optionKey === 'newChat') {
+      setHasSelectedOption(false);
+      setCurrentUrl('');
+      setWaitingFor('');
+      setSearchQuery('');
+      setSearchPage(1);
+      setErrorCount(0);
+      await startChat();
     } else {
       // For other options, keep the existing logic
       setTimeout(() => {
         if (optionKey === 'seo') {
+          setHasSelectedOption(true);
           setWaitingFor('seo');
           setMessages(prev => [
             ...prev,
@@ -356,6 +372,7 @@ export const useChat = () => {
             }
           ]);
         } else if (optionKey === 'brand') {
+          setHasSelectedOption(true);
           setWaitingFor('brand');
           setMessages(prev => [
             ...prev,
@@ -511,7 +528,7 @@ export const useChat = () => {
             role: 'assistant',
             content: i18n.t('chat.checkquestion'),
             type: 'options',
-            options: i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[]
+            options: getOptions()
           },
             
           ]);
@@ -644,7 +661,7 @@ export const useChat = () => {
             role: 'assistant',
             content: i18n.t('chat.checkquestion'),
             type: 'options',
-            options: i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[]
+            options: getOptions()
           }]);
               } else {
                 setMessages(prev => [...prev, {
@@ -726,7 +743,7 @@ export const useChat = () => {
             role: 'assistant',
             content: i18n.t('chat.checkquestion'),
             type: 'options',
-            options: i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[]
+            options: getOptions()
           }]);
             } else {
               setMessages(prev => [...prev, {
@@ -844,8 +861,9 @@ export const useChat = () => {
                    {
                 id: getUniqueId(),
                 role: 'assistant',
-                content:'Silakan pilih layanan yang ingin Anda butuhkan di bawah ini:',
-                type: 'options'
+                content: i18n.t('chat.chooseOption'),
+                type: 'options',
+                options: getOptions()
               }]);
               } else {
                 setMessages(prev => [...prev, {
