@@ -38,7 +38,8 @@
     "brandUserPrompt": "Buat respons terstruktur untuk pencarian frase \"{{val}}\" dengan format seperti contoh berikut, tapi isi dengan data nyata berdasarkan pencarian Anda:\n\nBerikut hasil pencarian dengan kata kunci <b>\"{{val}}\"</b> berdasarkan evaluasi dari berbagai sumber dan review pengguna di internet. Saya melakukan pencarian tanpa terpaku pada link yang Anda berikan, sehingga fokus utama adalah mencari [jenis pencarian] yang memang populer dan banyak direkomendasikan. Berikut informasi dan daftar 5 [jenis item] terbaik:\n\n**[Nama Item 1]**\n[Deskripsi panjang tentang item 1].\n\n**[Nama Item 2]**\n[Deskripsi panjang].\n\n[Lanjutkan untuk 5 item]\n\n**Catatan penting:**\n\n[Catatan tentang website {{currentUrl}} jika relevan].\n\nDaftar di atas berdasarkan [sumber].\n\nJika fokus Anda adalah melakukan pengecekan performa website {{currentUrl}} dalam konteks pencarian tersebut, maka [analisis posisi].\n\nGunakan tag HTML sederhana seperti <b>, <i>, <a> untuk formatting, tapi jangan tampilkan tag di output - output harus sudah dirender.",
     "brandSystemPrompt": "Anda adalah asisten AI yang membantu menganalisis performa brand di AI Search.",
     "overallScore": "Skor Keseluruhan: {{overallScore}}",
-    "chooseOption": "Silakan pilih layanan yang Anda butuhkan di bawah ini:"
+    "chooseOption": "Silakan pilih layanan yang Anda butuhkan di bawah ini:",
+    "lastQuestion" : "Apa yang ingin Anda lihat untuk website ini?"
    
   },
   "status": {

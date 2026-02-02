@@ -9,7 +9,7 @@ import { supabase } from '../../utils/supabase';
 const schema = z.object({
   name: z.string().min(1, 'Nama wajib diisi'),
   email: z.string().email('Email tidak valid'),
-  phone: z.string().regex(/^08[0-9]{8,11}$/, 'Nomor telepon harus dimulai dengan 08 dan 10-13 digit'),
+  phone: z.string().regex(/^\+?\d{8,15}$/, 'Nomor telepon tidak valid (gunakan format internasional jika diperlukan)'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -103,7 +103,7 @@ export default function InputDataDiri({ onSubmitSuccess }: InputDataDiriProps) {
             {...register('phone')}
             type="tel"
             className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 text-sm sm:text-base"
-            placeholder="08123456789"
+            placeholder="+628123456789"
           />
           {errors.phone && <p className="text-red-500 text-xs mt-1 sm:mt-1.5 ml-1">{errors.phone.message}</p>}
         </div>

@@ -204,6 +204,19 @@ export const useChat = () => {
   const handleOptionSelect = async (optionKey: string) => {
     setIsTyping(true);
 
+    if (['audit', 'seo', 'brand'].includes(optionKey)) {
+      setHasSelectedOption(true);
+    } else if (optionKey === 'newChat') {
+      setHasSelectedOption(false);
+      setCurrentUrl('');
+      setWaitingFor('');
+      setSearchQuery('');
+      setSearchPage(1);
+      setErrorCount(0);
+      await startChat();
+      return;
+    }
+
     const options = i18n.t('chat.auditOptions', { returnObjects: true }) as { key: string; label: string }[];
     const selectedOption = options.find(opt => opt.key === optionKey);
 
@@ -219,7 +232,6 @@ export const useChat = () => {
           type: 'text'
         }
       ]);
-
       // Fetch data from PageSpeed API
       const data = await fetchPageSpeedData(currentUrl, i18n.language);
 
@@ -241,7 +253,7 @@ export const useChat = () => {
         ]);
       }
       setIsTyping(false);
-      setHasSelectedOption(true);
+     
     } else if (optionKey === 'nextPage') {
       // Fetch next page
       setIsTyping(true);
@@ -360,7 +372,6 @@ export const useChat = () => {
       // For other options, keep the existing logic
       setTimeout(() => {
         if (optionKey === 'seo') {
-          setHasSelectedOption(true);
           setWaitingFor('seo');
           setMessages(prev => [
             ...prev,
@@ -372,7 +383,6 @@ export const useChat = () => {
             }
           ]);
         } else if (optionKey === 'brand') {
-          setHasSelectedOption(true);
           setWaitingFor('brand');
           setMessages(prev => [
             ...prev,
@@ -397,6 +407,7 @@ export const useChat = () => {
 
   const showResult = (option: string, extraInfo?: string, data?: any) => {
     setIsTyping(true);
+    setHasSelectedOption(true);
     setTimeout(() => {
       const { overallScore, performanceScore, seoScore, bestPracticesScore, accessibilityScore, issues } = processPageSpeedData(data);
 
@@ -569,9 +580,9 @@ export const useChat = () => {
     // Check if input matches any available options (always available if URL is set and not waiting)
     if (currentUrl && !waitingFor) {
       const optionKeywords: Record<string, string[]> = {
-        'Audit Kualitas Website': ['audit', 'kualitas', 'analisis', 'quality', 'analisa', 'review', 'evaluasi', 'inspection', 'assessment', 'diagnosis', 'scan', 'examine', 'verify', 'validate', 'inspeksi', 'penilaian', 'diagnosis', 'pemeriksaan', 'validasi'],
-        'Performance SEO Web Saya': ['seo','search', 'engine', 'optimization',  'ranking', 'peringkat', 'posisi', 'mesin', 'optimasi',  'serp', 'keyword', 'onpage', 'offpage', 'backlink', 'meta', 'title', 'description', 'mesin pencari', 'optimasi mesin pencari', 'peringkat google', 'seonya'],
-        'Performance Brand di AI Search': ['brand', 'ai', 'search', 'intelligence', 'merek', 'produk', 'kecerdasan', 'buatan', 'artificial', 'machine', 'learning', 'visibility', 'analytics', 'powered', 'kecerdasan buatan', 'performa merek', 'pencarian ai']
+        'audit': ['audit', 'kualitas', 'analisis', 'quality', 'analisa', 'review', 'evaluasi', 'inspection', 'assessment', 'diagnosis', 'scan', 'examine', 'verify', 'validate', 'inspeksi', 'penilaian', 'diagnosis', 'pemeriksaan', 'validasi'],
+        'seo': ['seo','search', 'engine', 'optimization',  'ranking', 'peringkat', 'posisi', 'mesin', 'optimasi',  'serp', 'keyword', 'onpage', 'offpage', 'backlink', 'meta', 'title', 'description', 'mesin pencari', 'optimasi mesin pencari', 'peringkat google', 'seonya'],
+        'brand': ['brand', 'ai', 'search', 'intelligence', 'merek', 'produk', 'kecerdasan', 'buatan', 'artificial', 'machine', 'learning', 'visibility', 'analytics', 'powered', 'kecerdasan buatan', 'performa merek', 'pencarian ai']
       };
 
       let matchedOption: string | undefined;
@@ -657,12 +668,12 @@ export const useChat = () => {
                   content: i18n.t('chat.websitePosition', { position, query: val }),
                   type: 'text'
                 },{
-            id: getUniqueId(),
-            role: 'assistant',
-            content: i18n.t('chat.checkquestion'),
-            type: 'options',
-            options: getOptions()
-          }]);
+                  id: getUniqueId(),
+                  role: 'assistant',
+                  content: i18n.t('chat.checkquestion'),
+                  type: 'options',
+                  options: getOptions()
+                }]);
               } else {
                 setMessages(prev => [...prev, {
                   id: getUniqueId(),
@@ -672,6 +683,15 @@ export const useChat = () => {
                   options: [{ key: 'nextPage', label: i18n.t('chat.nextPage') }]
                 }]);
                 setSearchPage(2);
+              setTimeout(() => {
+                setMessages(prev => [...prev, {
+                   id: getUniqueId(),
+                  role: 'assistant',
+                  content: i18n.t('chat.checkquestion'),
+                  type: 'options',
+                  options: getOptions()
+                }]);
+              }, 1000);
               }
             } else {
               setMessages(prev => [...prev, {
@@ -827,8 +847,9 @@ export const useChat = () => {
               {
                 id: getUniqueId(),
                 role: 'assistant',
-                content:'apa yang ingin Anda lihat untuk website ini?',
-                type: 'options'
+                content: i18n.t('chat.lastQuestion'),
+                type: 'options',
+                options: getOptions()
               }
             ]);
             setIsTyping(false);
