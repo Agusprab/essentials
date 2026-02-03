@@ -43,6 +43,22 @@
     "lastQuestion" : "What would you like to see for this website?",
     "newChat": "Start New Chat"
   },
+  "inputDataDiri": {
+    "nameRequired": "Name is required",
+    "emailInvalid": "Invalid email",
+    "phoneInvalid": "Invalid phone number (use international format if necessary)",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "phoneLabel": "WhatsApp Number",
+    "namePlaceholder": "Enter your name",
+    "emailPlaceholder": "Enter your email",
+    "phonePlaceholder": "+628123456789",
+    "submitButton": "Start Using AI",
+    "submittingButton": "Saving...",
+    "error": "An error occurred. Please try again.",
+    "welcomeTitle": "Welcome",
+    "welcomeDescription": "Please complete your data to start chatting with AI"
+  },
   "status": {
     "online": "Online",
     "offline": "Offline"

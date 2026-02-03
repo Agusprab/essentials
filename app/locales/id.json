@@ -44,6 +44,22 @@
     "newChat": "Mulai Chat Baru"
    
   },
+  "inputDataDiri": {
+    "nameRequired": "Nama wajib diisi",
+    "emailInvalid": "Email tidak valid",
+    "phoneInvalid": "Nomor telepon tidak valid (gunakan format internasional jika diperlukan)",
+    "nameLabel": "Nama",
+    "emailLabel": "Email",
+    "phoneLabel": "Nomor WhatsApp",
+    "namePlaceholder": "Masukkan nama Anda",
+    "emailPlaceholder": "Masukkan email Anda",
+    "phonePlaceholder": "+628123456789",
+    "submitButton": "Mulai Menggunakan AI",
+    "submittingButton": "Menyimpan...",
+    "error": "Terjadi kesalahan. Silakan coba lagi.",
+    "welcomeTitle": "Selamat Datang",
+    "welcomeDescription": "Silakan lengkapi data diri untuk mulai mengobrol dengan AI"
+  },
   "status": {
     "online": "Online",
     "offline": "Offline"

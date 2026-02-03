@@ -4,23 +4,29 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../../utils/supabase';
 
-const schema = z.object({
-  name: z.string().min(1, 'Nama wajib diisi'),
-  email: z.string().email('Email tidak valid'),
-  phone: z.string().regex(/^\+?\d{8,15}$/, 'Nomor telepon tidak valid (gunakan format internasional jika diperlukan)'),
-});
-
-type FormData = z.infer<typeof schema>;
+type FormData = {
+  name: string;
+  email: string;
+  phone: string;
+};
 
 interface InputDataDiriProps {
   onSubmitSuccess: () => void;
 }
 
 export default function InputDataDiri({ onSubmitSuccess }: InputDataDiriProps) {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const schema = z.object({
+    name: z.string().min(1, t('inputDataDiri.nameRequired')),
+    email: z.string().email(t('inputDataDiri.emailInvalid')),
+    phone: z.string().regex(/^\+?\d{8,15}$/, t('inputDataDiri.phoneInvalid')),
+  });
 
   const {
     register,
@@ -55,7 +61,7 @@ export default function InputDataDiri({ onSubmitSuccess }: InputDataDiriProps) {
       localStorage.setItem('userDataSubmitted', Date.now().toString());
       onSubmitSuccess();
     } catch (err: any) {
-      setError(err.message || 'Gagal menyimpan data. Silakan coba lagi.');
+      setError(t('inputDataDiri.error'));
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -70,47 +76,47 @@ export default function InputDataDiri({ onSubmitSuccess }: InputDataDiriProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Selamat Datang</h2>
-        <p className="text-slate-500 text-xs sm:text-sm mt-1">Silakan lengkapi data diri untuk mulai mengobrol dengan AI</p>
+        <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">{t('inputDataDiri.welcomeTitle')}</h2>
+        <p className="text-slate-500 text-xs sm:text-sm mt-1">{t('inputDataDiri.welcomeDescription')}</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
         <div>
-          <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1 sm:mb-2 ml-1">Nama Lengkap</label>
+          <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1 sm:mb-2 ml-1">{t('inputDataDiri.nameLabel')}</label>
           <input
             {...register('name')}
             type="text"
             className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 text-sm sm:text-base"
-            placeholder="Contoh: Budi Santoso"
+            placeholder={t('inputDataDiri.namePlaceholder')}
           />
           {errors.name && <p className="text-red-500 text-xs mt-1 sm:mt-1.5 ml-1">{errors.name.message}</p>}
         </div>
 
         <div>
-          <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1 sm:mb-2 ml-1">Email</label>
+          <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1 sm:mb-2 ml-1">{t('inputDataDiri.emailLabel')}</label>
           <input
             {...register('email')}
             type="email"
             className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 text-sm sm:text-base"
-            placeholder="budi@example.com"
+            placeholder={t('inputDataDiri.emailPlaceholder')}
           />
           {errors.email && <p className="text-red-500 text-xs mt-1 sm:mt-1.5 ml-1">{errors.email.message}</p>}
         </div>
 
         <div>
-          <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1 sm:mb-2 ml-1">Nomor WhatsApp</label>
+          <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1 sm:mb-2 ml-1">{t('inputDataDiri.phoneLabel')}</label>
           <input
             {...register('phone')}
             type="tel"
             className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 text-sm sm:text-base"
-            placeholder="+628123456789"
+            placeholder={t('inputDataDiri.phonePlaceholder')}
           />
           {errors.phone && <p className="text-red-500 text-xs mt-1 sm:mt-1.5 ml-1">{errors.phone.message}</p>}
         </div>
 
         {error && (
           <div className="bg-red-50 text-red-600 p-2 sm:p-3 rounded-lg text-xs border border-red-100 italic">
-            {error}
+            {t('inputDataDiri.error')}
           </div>
         )}
 
@@ -125,9 +131,9 @@ export default function InputDataDiri({ onSubmitSuccess }: InputDataDiriProps) {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              Menyimpan...
+              {t('inputDataDiri.submittingButton')}
             </span>
-          ) : 'Mulai Menggunakan AI'}
+          ) : t('inputDataDiri.submitButton')}
         </button>
       </form>
     </div>
