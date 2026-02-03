@@ -516,7 +516,7 @@ export const useChat = () => {
                                     <p className="text-xs font-medium text-slate-700">Solusi:</p>
                                     <ul className="text-xs text-slate-600 list-disc list-inside mt-1">
                                       {issue.details.slice(0, 3).map((item: any, idx: number) => (
-                                        <li key={idx}>{item.snippet || item.url || item}</li>
+                                        <li key={idx}>{item.snippet || item.url || (typeof item === 'object' ? 'Detail tersedia' : item)}</li>
                                       ))}
                                     </ul>
                                   </div>
@@ -586,8 +586,9 @@ export const useChat = () => {
 
     // Check for greeting keywords only if URL is already set
     if (currentUrl) {
-      const greetingKeywords = ['halo', 'hai', 'hi', 'hello', 'selamat pagi', 'selamat siang', 'selamat malam', 'hey', 'apa kabar', 'bagaimana kabar'];
-      if (greetingKeywords.some(keyword => val.toLowerCase().includes(keyword))) {
+      const greetingKeywords = ['halo', 'hai','hi', 'hello', 'selamat pagi', 'selamat siang', 'selamat malam', 'hey', 'apa kabar', 'bagaimana kabar'];
+      const inputWords = val.toLowerCase().trim().split(/\s+/);
+      if (inputWords.some(word => greetingKeywords.includes(word))) {
         setMessages(prev => [
           ...prev,
           { id: getUniqueId(), role: 'user', content: val, type: 'text' }
