@@ -23,6 +23,7 @@
     "analyzing": "Analyzing <strong>{{option}}</strong> for {{currentUrl}}",
     "withFocus": " with focus on \"{{extraInfo}}\"",
     "websitePosition": "Your website appears in position {{position}} in the search results for **\"{{query}}\"** on Google.",
+    "websitePositionNextPage": "Your website appears in position {{position}} in the search results for **\"{{query}}\"** on Google.",
     "helpMessage": "If you can't fix this issue, we're here to help!",
     "whatsappMessage": "Contact Us via WhatsApp",
     "checkquestion": "would you like to perform another check?",
@@ -39,7 +40,8 @@
     "brandSystemPrompt": "You are an AI assistant that helps analyze brand performance in AI Search.",
     "overallScore": "Overall Score: {{overallScore}}",
     "chooseOption": "Please choose the service you need below:",
-    "lastQuestion" : "What would you like to see for this website?"
+    "lastQuestion" : "What would you like to see for this website?",
+    "newChat": "Start New Chat"
   },
   "status": {
     "online": "Online",

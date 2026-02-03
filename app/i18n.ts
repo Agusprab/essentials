@@ -1,6 +1,5 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 
 import en from './locales/en.json';
 import id from './locales/id.json';
@@ -15,16 +14,11 @@ const resources = {
 };
 
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'id', // Set default language explicitly
+    lng: 'id', // Default, will be overridden by route
     fallbackLng: 'id',
-    detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
-    },
     interpolation: {
       escapeValue: false,
       format: function(value, format, lng) {

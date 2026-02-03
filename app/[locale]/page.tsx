@@ -2,15 +2,27 @@
 
 import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
-import ChatMessage from './components/ChatMessage';
-import TypingIndicator from './components/TypingIndicator';
-import InputDataDiri from './components/InputDataDiri';
-import { useChat } from '../hooks/useChat';
+import { useParams } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
+import ChatMessage from '../components/ChatMessage';
+import TypingIndicator from '../components/TypingIndicator';
+import InputDataDiri from '../components/InputDataDiri';
+import { useChat } from '../../hooks/useChat';
 
-const Header = dynamic(() => import('./components/Header'), { ssr: false });
-const InputBar = dynamic(() => import('./components/InputBar'), { ssr: false });
+const Header = dynamic(() => import('../components/Header'), { ssr: false });
+const InputBar = dynamic(() => import('../components/InputBar'), { ssr: false });
 
 export default function Home() {
+  const params = useParams();
+  const locale = params.locale as string;
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    if (locale) {
+      i18n.changeLanguage(locale);
+    }
+  }, [locale, i18n]);
+
   const [isDataSubmitted, setIsDataSubmitted] = useState(false);
 
   useEffect(() => {

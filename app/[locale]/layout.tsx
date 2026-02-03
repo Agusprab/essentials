@@ -1,6 +1,7 @@
-import Html from './Html';
-import { Geist, Geist_Mono } from "next/font/google";
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "../globals.css";
+import I18nProvider from "../i18n-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,43 +39,25 @@ export const metadata: Metadata = {
   themeColor: "#F8FAFC",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+type LayoutProps = {
   children: React.ReactNode;
-}>) {
+  params: Promise<{ locale: string }>;
+};
+
+import Html from '../Html';
+
+export default async function LocaleLayout({ children, params }: LayoutProps) {
+  const { locale } = await params;
+
   return (
-    <Html>
+    <Html lang={locale}>
       <head>
         <link rel="icon" href="/assets/icon/favicon.ico" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebApplication",
-              "name": "Essentials AI Chat",
-              "description": "Interface canggih untuk audit dan analisis performance website menggunakan kecerdasan buatan.",
-              "url": "https://essentials-ai.vercel.app",
-              "applicationCategory": "DeveloperApplication",
-              "operatingSystem": "Web Browser",
-              "offers": {
-                "@type": "Offer",
-                "price": "0",
-                "priceCurrency": "IDR"
-              },
-              "creator": {
-                "@type": "Organization",
-                "name": "Essentials Team"
-              }
-            }),
-          }}
-        />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <I18nProvider locale={locale}>
+          {children}
+        </I18nProvider>
       </body>
     </Html>
   );

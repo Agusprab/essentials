@@ -23,6 +23,7 @@
     "analyzing": "Menganalisis <strong>{{option}}</strong> untuk {{currentUrl}}",
     "withFocus": " dengan fokus \"{{extraInfo}}\"",
     "websitePosition": "Website Anda muncul di posisi ke-{{position}} pada hasil pencarian **\"{{query}}\"** di halaman Google.",
+    "websitePositionNextPage": "Website Anda muncul di posisi ke-{{position}} pada hasil pencarian **\"{{query}}\"** di halaman Google.",
     "helpMessage": "Jika Anda tidak bisa memperbaiki masalah ini, kami siap membantu!",
     "whatsappMessage": "Hubungi Kami via WhatsApp",
     "checkquestion": "ingin melakukan pengecekan lainnya?",
@@ -39,7 +40,8 @@
     "brandSystemPrompt": "Anda adalah asisten AI yang membantu menganalisis performa brand di AI Search.",
     "overallScore": "Skor Keseluruhan: {{overallScore}}",
     "chooseOption": "Silakan pilih layanan yang Anda butuhkan di bawah ini:",
-    "lastQuestion" : "Apa yang ingin Anda lihat untuk website ini?"
+    "lastQuestion" : "Apa yang ingin Anda lihat untuk website ini?",
+    "newChat": "Mulai Chat Baru"
    
   },
   "status": {
