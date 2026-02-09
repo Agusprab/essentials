@@ -166,12 +166,15 @@ export const useChat = () => {
       const ipData = await ipResponse.json();
       const ip = ipData.ip;
 
+      const visitorId = sessionStorage.getItem('visitorId');
+
       await supabase
         .from('url_visitor')
         .insert([
           {
             ip: ip,
             url_input: validatedUrl,
+            visitor_id: visitorId ? parseInt(visitorId) : null,
           },
         ]);
     } catch (error) {

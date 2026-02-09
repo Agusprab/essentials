@@ -45,7 +45,7 @@ export default function InputDataDiri({ onSubmitSuccess }: InputDataDiriProps) {
       const ipData = await ipResponse.json();
       const ip = ipData.ip;
 
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from('visitor')
         .insert([
           {
@@ -54,9 +54,14 @@ export default function InputDataDiri({ onSubmitSuccess }: InputDataDiriProps) {
             no_tlp: data.phone, // Pastikan kolom di Supabase bernama 'no_tlp'
             ip: ip, // Pastikan kolom di Supabase bernama 'Ip'
           },
-        ]);
+        ])
+        .select('id');
 
       if (error) throw error;
+
+      if (insertedData && insertedData[0]) {
+        sessionStorage.setItem('visitorId', insertedData[0].id);
+      }
 
       localStorage.setItem('userDataSubmitted', Date.now().toString());
       onSubmitSuccess();
